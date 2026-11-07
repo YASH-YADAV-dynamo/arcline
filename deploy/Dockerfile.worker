@@ -1,0 +1,10 @@
+# Arcline feed worker: keeps oracle prices fresh and writes /feed snapshots that Caddy serves.
+# The key comes from an env file on the server (never baked into the image).
+FROM node:22-alpine
+WORKDIR /srv
+RUN npm i --no-save --omit=dev --no-audit --no-fund viem@2.57.5 && npm cache clean --force \
+ && mkdir /feed && chown node /feed
+COPY ops/*.cjs ./ops/
+ENV FEED_DIR=/feed NODE_ENV=production PRICE_EVERY=120
+USER node
+CMD ["node", "ops/feed-worker.cjs"]

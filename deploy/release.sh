@@ -13,7 +13,8 @@ aws ecr describe-repositories --region $REGION --repository-names arcline >/dev/
   aws ecr create-repository --region $REGION --repository-name arcline >/dev/null
 aws ecr get-login-password --region $REGION | docker login -u AWS --password-stdin "${REPO%/*}"
 docker build --platform linux/amd64 -f deploy/Dockerfile -t "$REPO:$TAG" -t "$REPO:latest" .
-docker push -q "$REPO:$TAG" && docker push -q "$REPO:latest"
+docker build --platform linux/amd64 -f deploy/Dockerfile.worker -t "$REPO:worker-$TAG" .
+docker push -q "$REPO:$TAG" && docker push -q "$REPO:latest" && docker push -q "$REPO:worker-$TAG"
 
 # The box has no IAM role, so it gets a short-lived (12h) ECR pull token with the command.
 PW=$(aws ecr get-login-password --region $REGION)
@@ -21,9 +22,18 @@ CMD="set -e
 systemctl disable --now caddy 2>/dev/null || true
 echo '$PW' | docker login -u AWS --password-stdin ${REPO%/*} >/dev/null
 docker pull -q $REPO:$TAG
+docker pull -q $REPO:worker-$TAG
 docker rm -f arcline 2>/dev/null || true
 docker run -d --name arcline --restart unless-stopped -p 80:80 -p 443:443 -p 443:443/udp \
-  -v arcline_data:/data -v arcline_config:/config $REPO:$TAG
+  -v arcline_data:/data -v arcline_config:/config -v arcline_feed:/srv/feed:ro $REPO:$TAG
+# Feed worker (prices every 60s + /feed snapshots). Its key lives only in /etc/arcline/worker.env (mode 600).
+docker rm -f arcline-worker 2>/dev/null || true
+if [ -f /etc/arcline/worker.env ]; then
+  docker run -d --name arcline-worker --restart unless-stopped --env-file /etc/arcline/worker.env \
+    --log-opt max-size=5m --log-opt max-file=2 -v arcline_feed:/feed $REPO:worker-$TAG
+else
+  echo 'WARN: /etc/arcline/worker.env missing, worker not started (run deploy/set-worker-key.sh)'
+fi
 docker logout ${REPO%/*} >/dev/null
 docker image prune -f >/dev/null
 docker ps --filter name=arcline --format '{{.Names}} {{.Image}} {{.Status}}'"

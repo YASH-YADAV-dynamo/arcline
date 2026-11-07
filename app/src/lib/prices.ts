@@ -10,6 +10,7 @@ import { useSyncExternalStore } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useAssets, type ListedAsset } from './assets'
 import { fetchMarket, type MarketStat } from './market'
+import { gtFromFeed } from './feed'
 
 export type PriceRow = {
   asset: ListedAsset
@@ -33,9 +34,13 @@ type SearchPools = {
  *  liquidity across its pools wins. Throws on HTTP/network errors (e.g. a 429) so the query retries instead of
  *  caching "not found". Cached for the session. */
 export async function findMainnetToken(symbol: string): Promise<string | null> {
-  const r = await fetch(`${SEARCH}?query=${encodeURIComponent(symbol)}&network=arc&include=base_token`, { headers: { accept: 'application/json' } })
-  if (!r.ok) throw new Error(`gecko search ${r.status}`)
-  const j = (await r.json()) as SearchPools
+  const q = `?query=${encodeURIComponent(symbol)}&network=arc&include=base_token`
+  let j = await gtFromFeed<SearchPools>(`/search/pools${q}`)
+  if (!j) {
+    const r = await fetch(`${SEARCH}${q}`, { headers: { accept: 'application/json' } })
+    if (!r.ok) throw new Error(`gecko search ${r.status}`)
+    j = (await r.json()) as SearchPools
+  }
   const listed = new Set((j.included ?? []).filter((t) => t.type === 'token' && t.attributes?.coingecko_coin_id).map((t) => t.id))
   const depth = new Map<string, number>()
   for (const p of j.data ?? []) {

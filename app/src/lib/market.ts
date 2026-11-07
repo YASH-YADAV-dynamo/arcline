@@ -2,6 +2,7 @@
 // On-chain values (holdings, quotes, drift) always come from the contracts, never from here.
 // Cached 60s per URL, requests spaced to stay well under the public rate limit. Errors -> null (UI shows "delayed").
 import { useQuery } from '@tanstack/react-query'
+import { gtFromFeed } from './feed'
 
 // Same-origin path: Caddy (production) and Vite (dev) forward /gt/* to api.geckoterminal.com, so the browser
 // never makes a cross-origin call and a missing CORS header upstream cannot break charts.
@@ -12,6 +13,12 @@ let chain: Promise<unknown> = Promise.resolve()
 async function get<T>(path: string): Promise<T | null> {
   const hit = cache.get(path)
   if (hit && Date.now() - hit.at < 60_000) return hit.data as T
+  // server snapshot first: one shared request instead of a rate-limited call per path
+  const fed = await gtFromFeed<T>(`/networks/arc${path}`)
+  if (fed !== undefined) {
+    cache.set(path, { at: Date.now(), data: fed })
+    return fed
+  }
   // serialize requests ~400ms apart (about 25/min max under bursts with caching)
   const run = chain.then(async () => {
     // the public API rate-limits per IP (HTTP 429, sent without CORS headers so it surfaces as a network error):

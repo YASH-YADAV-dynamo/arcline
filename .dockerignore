@@ -1,4 +1,5 @@
-# Only the built site and the Caddyfile go into the image.
+# Only what the two images need. Never the .env (the worker gets its key from the server's env file).
 *
 !deploy/Caddyfile
 !app/dist/**
+!ops/*.cjs

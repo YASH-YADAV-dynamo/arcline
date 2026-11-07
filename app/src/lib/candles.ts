@@ -12,6 +12,7 @@ import { arcTestnet } from 'viem/chains'
 import type { PublicClient } from 'viem'
 import { ADDR, DEPLOY_BLOCK, registryAbi } from './contracts'
 import { scanLogs } from './scan'
+import { pointsSnap } from './feed'
 import { TIMEFRAMES, type Candle, type Timeframe } from './market'
 
 export type Point = { token: string; t: number; p: number }
@@ -88,6 +89,10 @@ export function useOraclePoints(token: `0x${string}` | undefined, enabled = true
     staleTime: 60_000,
     refetchInterval: 60_000,
     queryFn: async (): Promise<Point[]> => {
+      // server-indexed history: one static file instead of a chunked eth_getLogs walk in the browser
+      const snap = await pointsSnap()
+      const series = snap?.series[token!.toLowerCase()]
+      if (series) return series.map(([t, p]) => ({ token: token!.toLowerCase(), t, p })).filter((x) => x.p > 0)
       const { logs } = await scanLogs<Point>({
         key: 'registry:PriceUpdated',
         client: client as PublicClient,

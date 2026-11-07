@@ -25,6 +25,14 @@ arcline.sbs {
 		header Access-Control-Allow-Methods "GET, OPTIONS"
 	}
 
+	# Server-built snapshots (ops/feed-worker.cjs): oracle history + market data, one request each.
+	handle_path /feed/* {
+		root * /srv/feed
+		header Cache-Control "no-cache"
+		header Access-Control-Allow-Origin "*"
+		file_server
+	}
+
 	handle {
 		root * /srv/arcline
 		try_files {path} /index.html
