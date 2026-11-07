@@ -12,6 +12,10 @@ arcline.sbs {
 	handle_path /gt/* {
 		reverse_proxy https://api.geckoterminal.com {
 			header_up Host api.geckoterminal.com
+			# GeckoTerminal answers 404 to requests carrying forwarding headers, which Caddy adds by default.
+			header_up -X-Forwarded-For
+			header_up -X-Forwarded-Host
+			header_up -X-Forwarded-Proto
 			header_down -Set-Cookie
 			header_down -Access-Control-Allow-Origin
 		}
