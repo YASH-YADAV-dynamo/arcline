@@ -1,0 +1,4 @@
+# Only the built site and the Caddyfile go into the image.
+*
+!deploy/Caddyfile
+!app/dist/**
