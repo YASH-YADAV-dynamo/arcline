@@ -1,0 +1,26 @@
+{
+  "note": "Copied verbatim from arc/studio-result.json by arc/run-studio.sh. Arc Testnet (chain 5042002). Testnet only.",
+  "copiedAt": "2026-11-06T04:16:12.078Z",
+  "status": "completed",
+  "appId": "15d92133-331d-4ed8-9624-2367caa01380",
+  "webUrl": "https://studio.arc.io/app/15d92133-331d-4ed8-9624-2367caa01380",
+  "chainId": 5042002,
+  "bountyVault": "0xc67ca8aa627bf385ff54464b1cff9562c75439f1",
+  "basketLedger": "0x6bfea21358e9f141ee780feafb52f1ddefebd718",
+  "deployments": [
+    {
+      "contract": "OpenAlphaBountyVault",
+      "address": "0xc67ca8aa627bf385ff54464b1cff9562c75439f1",
+      "network": "Arc Testnet",
+      "explorerUrl": "https://explorer.testnet.arc.io/address/0xc67ca8aa627bf385ff54464b1cff9562c75439f1",
+      "txHash": "0x7af66683a4b3da12548c001aa51be1ee5c232d9a5fc3890d7f4ed8d3dcaff09f"
+    },
+    {
+      "contract": "OpenAlphaBasketLedger",
+      "address": "0x6bfea21358e9f141ee780feafb52f1ddefebd718",
+      "network": "Arc Testnet",
+      "explorerUrl": "https://explorer.testnet.arc.io/address/0x6bfea21358e9f141ee780feafb52f1ddefebd718",
+      "txHash": "0xc06276986743b83b43cd211ce2653ac07642417b17461dc932f83cfe97dfc8cb"
+    }
+  ]
+}

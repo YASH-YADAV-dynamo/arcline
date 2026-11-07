@@ -1,0 +1,51 @@
+name: price-keeper
+
+# Keeps AssetRegistry prices fresh so trading is never blocked by staleness, and accumulates
+# PriceUpdated history for the on-chain chart series.
+#
+# This is a LIVENESS BACKSTOP, not the real price feed. The Chainlink CRE workflow in
+# cre/price-guard is the intended source; this exists because it is not deployed to a DON yet.
+#
+# Setup: add repository secret ARC_PRIVATE_KEY (a funded Arc Testnet key that is an authorised
+# AssetRegistry reporter). Never commit the key.
+#
+# Note on cadence: GitHub's shortest cron is 5 minutes, and scheduled runs are best-effort —
+# under load they can be delayed or dropped. The registry's maxStaleness is 3600s, so even a
+# badly delayed run stays well inside budget. If you need a hard guarantee, run
+# `node ops/keeper-loop.cjs 240` on a real host instead.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: price-keeper
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install app deps (ops scripts resolve viem from app/node_modules)
+        working-directory: app
+        run: bun install --frozen-lockfile
+
+      - name: Report prices
+        env:
+          ARC_PRIVATE_KEY: ${{ secrets.ARC_PRIVATE_KEY }}
+        run: node ops/report-prices.cjs
+
+      # Rebalancing is permissionless, so any funded key works (it only needs gas). The contract
+      # pays the caller a capped tip and enforces every gate; the script simulates before sending.
+      - name: Rebalance baskets and run due SIPs
+        env:
+          ARC_PRIVATE_KEY: ${{ secrets.ARC_PRIVATE_KEY }}
+        run: node ops/rebalance-keeper.cjs --once

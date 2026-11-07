@@ -1,0 +1,5 @@
+# Arcline CRE project (testnet only). Public Arc testnet RPC, no secrets here.
+staging-settings:
+  rpcs:
+    - chain-name: arc-testnet
+      url: https://rpc.testnet.arc.io

@@ -1,0 +1,19 @@
+.env
+.env.*
+node_modules
+app/contracts/out
+app/contracts/cache
+studio/turn*.json
+studio/turn*.log
+
+# OpenAlpha Arc legacy: Studio session logs stay local
+legacy/**/studio-*.log
+legacy/**/studio-*.json
+
+ops/.rebalance-keeper.log
+
+# build output and local temp
+app/dist
+dist
+cre/**/.cre_build_tmp.js
+*.log

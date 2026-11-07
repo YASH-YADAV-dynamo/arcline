@@ -1,0 +1,50 @@
+{
+  "schedule": "0 */5 * * * *",
+  "chainSelectorName": "arc-testnet",
+  "registry": "0x79E37808c2187B949D36c0295C7947154CD85A47",
+  "receiver": "0x97f154f7991948bcd218e96300a50b053eec04dd",
+  "gasLimit": "800000",
+  "geckoBase": "https://api.geckoterminal.com/api/v2/networks/arc",
+  "mirrors": [
+    {
+      "symbol": "cirBTC.m",
+      "token": "0x4010e44C6142bdfC9e1b5e9c1eeBF3737aa712fD",
+      "mainnetRef": "0x171A4217b86A807A64eB94757Db6849fb4bDbAA0"
+    },
+    {
+      "symbol": "WETH.m",
+      "token": "0x090E8DfF74c951c4E2aDbc8A49CBCC4F2BE57B69",
+      "mainnetRef": "0x128cC466B61f542da60c70e3aA11c10e19B84EDB"
+    },
+    {
+      "symbol": "GBPA.m",
+      "token": "0xd953B990354196fef89ee48260839b8aA4EACF43",
+      "mainnetRef": "0xbBe6aAB0Ed76e90AeA0d1cd978EC231c8AdCDF8b"
+    },
+    {
+      "symbol": "syrupUSDC.m",
+      "token": "0x58E9A1d957F31d11003edB2aaEDC845e027E7B90",
+      "mainnetRef": "0x0dC6b79F3c3854E4d74514fD4d29BE6c96Beee39"
+    },
+    {
+      "symbol": "XAUM.m",
+      "token": "0x8D94c619e9DF890d0f285a4529D2e6acaF65eA5A",
+      "mainnetRef": "0x178b01f61CBeA1D2a5581Fe1621Be607835EC349"
+    },
+    {
+      "symbol": "ASTOCK.m",
+      "token": "0xC2Ce3d0B6B6e0924c718dcF9a715e5291306d52d",
+      "mainnetRef": "0x4C9b47Dbd5933aa4574B2c27F82419E4DBBD0222"
+    }
+  ],
+  "eurc": {
+    "token": "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
+    "stateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
+    "poolId": "0xf775c49a5149d5d85f0667782c0b5ccde7fbaeeac0cdbe0ea3b47eea8d7829ea"
+  },
+  "guard": {
+    "watchPct": 5,
+    "noBuyPct": 10,
+    "exitPct": 20
+  }
+}

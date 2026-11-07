@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "entries": {
+    "ARC.md": {
+      "hash": "a11fde43c9b09befda50550bbaf511293efb859283d78a0e23fbedf520684675",
+      "pulledAt": "2026-11-06T08:25:45.749Z"
+    },
+    "contracts/out/AssetRegistry.sol/AssetRegistry.json": {
+      "hash": "aed5d0a6badbf15ebb8c324983a777904b60f88b5e6c4902963cad8157ddd943",
+      "pulledAt": "2026-11-06T08:25:55.451Z"
+    },
+    "contracts/out/TemplateRegistry.sol/TemplateRegistry.json": {
+      "hash": "ff40b9c1379365e012049e8d55d7ac93b2bb77136ef4d53fa0660000d23b1562",
+      "pulledAt": "2026-11-06T08:25:57.557Z"
+    },
+    "contracts/out/BucketFactory.sol/BucketFactory.json": {
+      "hash": "c02ffd8ea8cede6abbd70da6528daae2edf30dcbadd79987ccdf6ffb877b7121",
+      "pulledAt": "2026-11-06T08:25:59.435Z"
+    },
+    "contracts/out/BucketAccount.sol/BucketAccount.json": {
+      "hash": "caa1ce0d323186357f7f1028adab9103028801a9cc0d83973d473527878b8041",
+      "pulledAt": "2026-11-06T08:26:01.604Z"
+    },
+    "contracts/out/UniswapV4Venue.sol/UniswapV4Venue.json": {
+      "hash": "9345ed672a24f4d8518c758ca640e220e00ead2742f89ec36afbcdbba87303bc",
+      "pulledAt": "2026-11-06T08:26:04.353Z"
+    },
+    "contracts/out/MirrorVenue.sol/MirrorVenue.json": {
+      "hash": "4b4879de0d8ee9c8cca50b9ab7c76bda39c81ab74c388a424a6d1d857a83c9fd",
+      "pulledAt": "2026-11-06T08:26:06.436Z"
+    },
+    "contracts/ArcTreasuryCore.sol": {
+      "hash": "499d287b573fc9fd68964eff12ca6943d327c21eefae7f7a1edb4cf607e5e02e",
+      "pulledAt": "2026-11-06T08:26:08.943Z"
+    },
+    "contracts/AssetRegistry.sol": {
+      "hash": "6b55885306584b5d410852d052a063cf89a03aa4646ab815c334abb346ee55a8",
+      "pulledAt": "2026-11-06T08:26:08.947Z"
+    },
+    "contracts/BucketAccount.sol": {
+      "hash": "06363523058212c51c0c67060542217ceea307c0a9d73d9992438344224f2796",
+      "pulledAt": "2026-11-06T08:26:08.948Z"
+    },
+    "contracts/BucketFactory.sol": {
+      "hash": "ada8d80ce87a72d627d72a5d19064098c91daa281954079656327670e4c4917a",
+      "pulledAt": "2026-11-06T08:26:08.948Z"
+    },
+    "contracts/IArcTreasury.sol": {
+      "hash": "aec8877c5441de1836835778551761a47bf6ebe497c5b8a0882ead0a3b6466c2",
+      "pulledAt": "2026-11-06T08:26:08.948Z"
+    },
+    "contracts/MirrorToken.sol": {
+      "hash": "92411fbf0408020944e8190ef1a801431cbf17ae24761ffd512ef0ebf8af6326",
+      "pulledAt": "2026-11-06T08:26:08.949Z"
+    },
+    "contracts/MirrorTokenBatch.sol": {
+      "hash": "4545115aa50b60702c8842c8e49ad28b3f9c714125a95c1317983423c4bafc5e",
+      "pulledAt": "2026-11-06T08:26:08.949Z"
+    },
+    "contracts/MirrorVenue.sol": {
+      "hash": "ad34e06034f21c743edf047e3ae98ea907821ce728f6d73886bb23336d392ba9",
+      "pulledAt": "2026-11-06T08:26:08.949Z"
+    },
+    "contracts/SeedRelay.sol": {
+      "hash": "784420c00635d6001bef05f075cd1cbaba429a664dfaf9149e2ce6a8b61c49a7",
+      "pulledAt": "2026-11-06T08:26:08.949Z"
+    },
+    "contracts/TemplateRegistry.sol": {
+      "hash": "b0c21d98b2d8b997f527585fd3aac335ef8a2abaf706a9ce2839dcc43db37694",
+      "pulledAt": "2026-11-06T08:26:08.950Z"
+    },
+    "contracts/UniswapV4Venue.sol": {
+      "hash": "e51ea42707cc4d0f93e9f7d06a225294621f1b6950cabef9b38e330692b60a2f",
+      "pulledAt": "2026-11-06T08:26:08.950Z"
+    },
+    "src/App.tsx": {
+      "hash": "728a89a659a143e0f7470fe5cf0cf8d3196cb9fa11c54b01ff2da6a1145e5dce",
+      "pulledAt": "2026-11-06T08:31:33.144Z"
+    },
+    "src/config.ts": {
+      "hash": "596382b44e51f54fb0045aefbf334b5e96dc801d09179e69d6dd1a5934e6caa4",
+      "pulledAt": "2026-11-06T08:31:33.145Z"
+    },
+    "src/console-capture.ts": {
+      "hash": "d3ac226eed0f96fcbcb7b2d1d8998fc92ea43d173f26cdac4840d3e3d6ff2f66",
+      "pulledAt": "2026-11-06T08:31:33.145Z"
+    },
+    "src/index.css": {
+      "hash": "7b91475d7bf624dc71cb2721f52df36b382913523f67a7677ab2d42a220e5039",
+      "pulledAt": "2026-11-06T08:31:33.146Z"
+    },
+    "src/main.tsx": {
+      "hash": "c58c842a9fb63dc351f36a350d53ac97361cea8865ee1116c22a2e13c8c7c6b8",
+      "pulledAt": "2026-11-06T08:31:33.146Z"
+    },
+    "src/onchain-facts.ts": {
+      "hash": "c7c314ada2f6be684dcd24c703fee3fec68f8bc0a2c7c9d1bcf3633c33199abd",
+      "pulledAt": "2026-11-06T08:31:33.146Z"
+    },
+    "src/onchain-money.ts": {
+      "hash": "1ac379552459f345f429d85b6d3f9f5f052be0c62ab630c6b111ea6f7a78af4f",
+      "pulledAt": "2026-11-06T08:31:33.147Z"
+    },
+    "src/onchain-wait.ts": {
+      "hash": "e6b89dcf266213adea50cd35dd761aa8adfc4fb121dd90c702fb635d98bb1577",
+      "pulledAt": "2026-11-06T08:31:33.147Z"
+    },
+    "src/tracing.ts": {
+      "hash": "b84056625447264048b618d924b640d9f24da57741e875c8ab6fb32e42c18713",
+      "pulledAt": "2026-11-06T08:31:33.148Z"
+    },
+    "src/vite-env.d.ts": {
+      "hash": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "pulledAt": "2026-11-06T08:31:33.148Z"
+    },
+    "src/lib/share.ts": {
+      "hash": "fe7401b995cb8476761a551897cac873be63cbeb28d8c9ac34c154648dc0901d",
+      "pulledAt": "2026-11-06T08:31:33.148Z"
+    },
+    "package.json": {
+      "hash": "2f5830c459b1c269f821b602fab3d404ceb3fca7e704cd488c6833356c282fcb",
+      "pulledAt": "2026-11-06T08:31:35.910Z"
+    },
+    "vite.config.ts": {
+      "hash": "58bfc87c2e88182c01c24d362e85ff51b9cfed76bf16d274a821df623bb68ae2",
+      "pulledAt": "2026-11-06T08:31:37.744Z"
+    },
+    "tsconfig.json": {
+      "hash": "83c5d5d611eb4e1c4a4350829e46111577c6bc7d9fb06cfb961817aad721a147",
+      "pulledAt": "2026-11-06T08:31:39.541Z"
+    },
+    "index.html": {
+      "hash": "437b77b557964ff649c5e5ddb1a604bbf1650af4f5634c0f6e09610bc49bf595",
+      "pulledAt": "2026-11-06T08:31:41.240Z"
+    },
+    ".oxlintrc.json": {
+      "hash": "5f1d92cb882c4bb23420d87082a9d5f1bef8d9bbbab5587bf8a49b70464da7ff",
+      "pulledAt": "2026-11-06T08:31:42.971Z"
+    },
+    "AGENTS.md": {
+      "hash": "e2e11cfbeb72482a5c994c631f7d529edeabea1de287fafcd00daeab5ba15a4b",
+      "pulledAt": "2026-11-06T08:31:45.097Z"
+    },
+    "bun.lock": {
+      "hash": "5601f28de68e8dd91c02a3ebcf24cc26a2224968b0c8aa56b8766c8b2eac5d75",
+      "pulledAt": "2026-11-06T08:38:56.976Z"
+    },
+    "tailwind.config.js": {
+      "hash": "96e72908328954920bc0840fa575f9114863576deb3cab9ec61951a3181650dd",
+      "pulledAt": "2026-11-06T08:38:58.781Z"
+    },
+    "postcss.config.js": {
+      "hash": "f0156321fafa19749b38a82ea29e7b1786a1f727b67372ef40cc66de0ed898fb",
+      "pulledAt": "2026-11-06T08:39:00.638Z"
+    }
+  }
+}

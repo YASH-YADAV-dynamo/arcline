@@ -1,0 +1,46 @@
+# Arcline on arcline.sbs. Caddy gets and renews the HTTPS certificate on its own.
+# Static SPA (hash router) + a same-origin proxy for the GeckoTerminal market API.
+
+www.arcline.sbs {
+	redir https://arcline.sbs{uri} permanent
+}
+
+arcline.sbs {
+	encode zstd gzip
+
+	# Market data (display only). Same origin, so the browser never depends on GeckoTerminal's CORS headers.
+	handle_path /gt/* {
+		reverse_proxy https://api.geckoterminal.com {
+			header_up Host api.geckoterminal.com
+			header_down -Set-Cookie
+			header_down -Access-Control-Allow-Origin
+		}
+		header Cache-Control "public, max-age=30"
+		# Light CORS: public, read-only data; lets agents and other origins call it too.
+		header Access-Control-Allow-Origin "*"
+		header Access-Control-Allow-Methods "GET, OPTIONS"
+	}
+
+	handle {
+		root * /srv/arcline
+		try_files {path} /index.html
+		file_server
+	}
+
+	@assets path /assets/* /tokens/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	@html path / /index.html
+	header @html Cache-Control "no-cache"
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# Anything else (e.g. the bare server IP) gets a plain 404 instead of the app.
+:80 {
+	respond 404
+}

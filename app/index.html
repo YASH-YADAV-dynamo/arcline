@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Arc Studio by Circle — https://studio.arc.io" />
+
+    <title>Arcline — spot exchange & risk-managed rebalancing on Arc</title>
+    <meta
+      name="description"
+      content="Trade spot on Arc Testnet through a Uniswap v4 pool, then let drift-banded buckets and SIPs rebalance the position on-chain. Every price carries its source and age."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <!-- Matches --bg in src/index.css so the browser chrome does not flash white before paint. -->
+    <meta name="theme-color" content="#0a0b0e" />
+
+    <!-- The design system in tailwind.config.js asks for Inter and JetBrains Mono. Without these
+         they silently fell back to system-ui and Consolas, which also cost the tabular-numeral
+         alignment that .num relies on for price columns. -->
+    <link rel="preconnect" href="https://rpc.testnet.arc.io" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+
+    <!-- Inline so there is no extra request and no binary asset to track. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0b0e'/%3E%3Cpath d='M7 21.5 13 11l6 10.5' stroke='%23c6f432' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='24' cy='12' r='2.6' fill='%23c6f432'/%3E%3C/svg%3E"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Arcline" />
+    <meta
+      property="og:description"
+      content="Spot exchange and risk-managed rebalancing on Arc Testnet, settled through Uniswap v4."
+    />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <!-- Built with Arc Studio — https://studio.arc.io -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
