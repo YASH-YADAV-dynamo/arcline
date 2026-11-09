@@ -62,6 +62,24 @@ export function exitHeld(s: BucketState, assets: ListedAsset[] | undefined) {
   return s.tokens.some((t, i) => (assetOf(t, assets)?.risk ?? 0) === 3 && s.amounts[i] > 0n && s.valuesE18[i] > 0n)
 }
 
+/** A rebalance values the basket and sizes every order from the oracle, so it must run on CURRENT prices.
+ *  The registry accepts prices up to an hour old (maxStaleness), far too loose to rebalance against: the
+ *  market can move several percent in that time. The app therefore holds the button until every price in
+ *  the basket is at most this old. The keeper (ops/rebalance-keeper.cjs) posts a fresh report right before
+ *  it rebalances, with a tighter 90s limit, so automatic rebalances always pass this. */
+export const LATEST_PRICE_SEC = 120
+
+/** Age in seconds of the oldest price among the basket's assets (USDC is pinned, so it never counts). */
+export function oldestPriceAge(s: BucketState, now: number, assets: ListedAsset[] | undefined): number | null {
+  let oldest: number | null = null
+  for (const t of s.tokens) {
+    const a = assetOf(t, assets)
+    if (!a || a.display === 'USDC' || a.observedAt === null) continue
+    oldest = Math.max(oldest ?? 0, now - a.observedAt)
+  }
+  return oldest
+}
+
 /**
  * Every rebalance precondition the UI can see, in contract order. Unlike data.rebalanceGate this also knows
  * that a held Exit-level asset triggers a rebalance even when drift is inside the band.
@@ -70,12 +88,21 @@ export function rebalanceChecks(s: BucketState, now: number, assets: ListedAsset
   const readyAt = s.lastRebalance + s.params.cooldown
   const exit = exitHeld(s, assets)
   const staleSyms = s.tokens.filter((t) => assetOf(t, assets)?.priceE8 === null).map((t) => assetOf(t, assets)?.display ?? t.slice(0, 8))
+  const age = oldestPriceAge(s, now, assets)
+  const latest = age === null || age <= LATEST_PRICE_SEC
   const checks: Check[] = [
     { label: 'Not paused', ok: !s.paused, detail: s.paused ? 'The owner paused this basket.' : 'Active.' },
     {
       label: 'Fresh oracle prices',
       ok: Boolean(s.drift),
       detail: s.drift ? 'Every asset in the basket has a price within the registry staleness window.' : `No fresh on-chain price for ${staleSyms.join(', ') || 'a held asset'}; the contract can't value the basket until the CRE workflow updates it.`,
+    },
+    {
+      label: 'Latest prices',
+      ok: latest,
+      detail: latest
+        ? 'Every price was updated in the last two minutes, so orders are sized on current prices.'
+        : `The oldest price is ${duration(age ?? 0)} old. Rebalancing waits for a fresh report so orders are not sized on an old price; the keeper posts one right before it rebalances.`,
     },
     { label: 'Has value', ok: s.totalE18 > 0n, detail: s.totalE18 > 0n ? 'Funded.' : 'Empty: deposit USDC first.' },
     {
@@ -103,6 +130,8 @@ export function rebalanceChecks(s: BucketState, now: number, assets: ListedAsset
         ? `Cooldown, ready ${until(readyAt, now)}`
         : first.label === 'Fresh oracle prices'
           ? 'Stale price: rebalance blocked'
+          : first.label === 'Latest prices'
+            ? 'Waiting for latest prices'
           : first.label === 'Has value'
             ? 'Empty: deposit first'
             : 'Paused by owner'

@@ -52,7 +52,7 @@ const StudioWatermark = () => (
     rel="noopener noreferrer"
     style={{
       position: 'fixed',
-      // Shell sets --badge-bottom so the badge clears the mobile tab bar and the desktop status bar.
+      // index.css sets --badge-bottom so the badge clears the desktop status bar (and Trade's sticky Buy/Sell bar).
       bottom: 'var(--badge-bottom, 16px)',
       right: '16px',
       display: 'flex',

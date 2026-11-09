@@ -1,11 +1,11 @@
 // Exchange status bar (fixed 28px on desktop, inline on mobile) + a multi-column footer with links.
-import { useBlockNumber, useReadContract } from 'wagmi'
+import { useReadContract } from 'wagmi'
+import { useLive } from '@/lib/live'
 import { arcTestnet } from 'viem/chains'
 import { ArrowUpRight } from 'lucide-react'
 import { useAssets } from '@/lib/assets'
 import { ADDR, registryAbi } from '@/lib/contracts'
 import { useNow } from '@/components/bucket/data'
-import { HorizonArt } from '@/components/art/Art'
 
 const LINKS = [
   { href: 'https://studio.arc.io', label: 'Arc Studio' },
@@ -22,7 +22,7 @@ function age(sec: number) {
 
 export function StatusBar() {
   const now = useNow(5_000)
-  const block = useBlockNumber({ chainId: arcTestnet.id, query: { refetchInterval: 10_000 } })
+  const live = useLive() // block number pushed over the WebSocket, no polling
   const maxStale = useReadContract({ address: ADDR.registry, abi: registryAbi, functionName: 'maxStaleness', chainId: arcTestnet.id, query: { staleTime: 300_000 } })
   const assets = useAssets()
 
@@ -39,8 +39,9 @@ export function StatusBar() {
     <div className="z-30 border-t border-line bg-panel/95 backdrop-blur-md md:fixed md:inset-x-0 md:bottom-0">
       <div className="mx-auto flex min-h-7 max-w-[1600px] flex-wrap items-center gap-x-2 gap-y-0.5 px-4 py-1 font-mono text-[11px] leading-5 text-muted md:h-7 md:flex-nowrap md:overflow-hidden md:py-0">
         <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${block.data ? 'bg-up' : 'bg-faint'}`} />
-          <span className="num">{block.data ? `Block #${block.data.toLocaleString('en-US')}` : 'Block #…'}</span>
+          <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${live.status === 'live' ? 'bg-up' : live.status === 'down' ? 'bg-warn' : 'bg-faint'}`} />
+          <span className="num">{live.block ? `Block #${live.block.toLocaleString('en-US')}` : 'Block #…'}</span>
+          <span className="text-faint">{live.status === 'live' ? 'live' : live.status === 'down' ? 'reconnecting' : 'connecting'}</span>
         </span>
         {sep}
         <span>Prices on-chain</span>
@@ -64,23 +65,22 @@ export function StatusBar() {
 }
 
 const PRODUCT = [
-  { href: '#/markets', label: 'Markets' },
-  { href: '#/trade/EURC', label: 'Trade' },
   { href: '#/baskets', label: 'Baskets' },
   { href: '#/portfolio', label: 'Portfolio' },
+  { href: '#/assets', label: 'Assets' },
+  { href: '#/trade/EURC', label: 'Trade' },
 ]
 
 const linkCls = 'inline-flex items-center gap-0.5 rounded text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent'
 
 export function Footer() {
   return (
-    <footer className="relative isolate overflow-hidden border-t border-line">
-      <HorizonArt className="absolute inset-x-0 bottom-0 -z-10 h-40 w-full opacity-60" />
+    <footer className="border-t border-line">
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 text-xs sm:pb-20">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
           <div className="col-span-2 min-w-0 md:col-span-1">
             <p className="text-sm font-semibold tracking-tight text-ink">Arcline</p>
-            <p className="mt-1.5 max-w-xs text-muted">Agent-native DEX for FX, blue chips and real-world assets.</p>
+            <p className="mt-1.5 max-w-xs text-muted">Baskets of FX, crypto and real world assets that rebalance themselves on Arc.</p>
           </div>
           <nav aria-label="Product" className="min-w-0">
             <h2 className="eyebrow mb-2.5">Product</h2>

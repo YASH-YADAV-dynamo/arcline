@@ -23,11 +23,11 @@ export function normalize(rows: Row[]): Row[] {
 }
 
 export function targetsError(rows: Row[]): string | null {
-  if (!rows.length) return 'Add at least one asset'
+  if (!rows.length) return 'Add at least one coin'
   if (rows.length > BOUNDS.maxAssets) return `At most ${BOUNDS.maxAssets} assets`
-  if (rows.some((r) => !Number.isInteger(r.bps) || r.bps <= 0)) return 'Every asset needs a weight above 0%'
+  if (rows.some((r) => !Number.isInteger(r.bps) || r.bps <= 0)) return 'Every coin needs a share above 0%'
   const sum = rows.reduce((a, r) => a + r.bps, 0)
-  if (sum !== 10_000) return `Weights sum to ${(sum / 100).toFixed(2)}%, need exactly 100.00%`
+  if (sum !== 10_000) return `Shares add up to ${(sum / 100).toFixed(2)}%. They need to make exactly 100%`
   return null
 }
 
@@ -47,7 +47,7 @@ export function TargetsEditor({ rows, onChange, assets, disabled }: { rows: Row[
 
   return (
     <div className="min-w-0 space-y-3">
-      {rows.length === 0 && <p className="text-sm text-muted">No assets yet. Add one below.</p>}
+      {rows.length === 0 && <p className="text-sm text-muted">No coins yet. Add one below.</p>}
       <ul className="space-y-3">
         {rows.map((r, i) => {
           const a = find(r.token)
@@ -96,21 +96,21 @@ export function TargetsEditor({ rows, onChange, assets, disabled }: { rows: Row[
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="btn-ghost h-9" disabled={disabled || rows.length >= BOUNDS.maxAssets} onClick={() => setPicking((v) => !v)}>
-          <Plus size={14} /> Add asset
+          <Plus size={14} /> Add a coin
         </button>
         <button type="button" className="btn-ghost h-9" disabled={disabled || !rows.length} onClick={() => onChange(normalize(rows))}>
-          <Scale size={14} /> Auto-normalize
+          <Scale size={14} /> Make it 100%
         </button>
         <span className={`num ml-auto font-mono text-sm ${sum === 10_000 ? 'text-up' : 'text-down'}`}>
           {(sum / 100).toFixed(2)}% <span className="text-muted">/ 100.00%</span>
         </span>
       </div>
-      <p className="text-xs text-muted">{rows.length}/{BOUNDS.maxAssets} assets</p>
+      <p className="text-muted caption-5">{rows.length} of {BOUNDS.maxAssets} coins</p>
 
       {picking && (
         <div className="rounded-xl border border-line p-3">
           {!assets ? (
-            <p className="text-sm text-muted">Loading assets…</p>
+            <p className="text-sm text-muted">Loading coins…</p>
           ) : (
             CATEGORIES.map((cat) => {
               const list = assets.filter((a) => a.category === cat)

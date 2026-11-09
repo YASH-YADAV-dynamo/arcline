@@ -1,67 +1,76 @@
-// FAQ. Native <details> so it works without JS, is keyboard-operable and searchable by Ctrl+F.
-// Answers stay short but honest about the testnet limits: a visitor finding out later is worse than
-// reading it here, and the risk answers are the ones an agent operator actually needs.
-import { ChevronDown } from 'lucide-react'
+// FAQ. Native <details> so it works without JS, is keyboard operable and searchable by Ctrl+F.
+// Plain answers a trader can act on, honest about the testnet limits: a visitor finding out later is
+// worse than reading it here. Plain question and answer text, so it also reads well to answer engines.
+import { CaretDown } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { Link } from '@/lib/router'
 
 type Qa = { q: string; a: ReactNode }
 
-const QA: Qa[] = [
+const link = 'text-accent underline-offset-4 hover:underline'
+
+export const QA: Qa[] = [
   {
-    q: 'What can an agent do here?',
-    a: <>Read every market (price, age, risk, venue), quote a trade and rebalance a basket it is authorised for. Out-of-bounds requests revert on-chain.</>,
-  },
-  {
-    q: 'What stops an agent from draining a position?',
+    q: 'What is a basket?',
     a: (
       <>
-        Four on-chain gates: <strong>max trade size</strong>, <strong>drift band</strong>, <strong>cooldown</strong> and a{' '}
-        <strong>slippage bound</strong>. A stale oracle blocks trading; risk level 3 exits to USDC.
+        A small contract that belongs to you and holds a mix of coins, like 50% bitcoin, 30% gold and 20% euro. It keeps
+        that mix on target for you. <Link to="/buckets/new" className={link}>Create one</Link>.
       </>
     ),
   },
   {
-    q: 'Are the RWAs real assets?',
+    q: 'When does it rebalance?',
+    a: <>When any coin moves further from its target than the range you picked, say 5%. A keeper checks every couple of minutes. Anyone can trigger a due rebalance, including you, and the caller gets a small capped tip for doing it.</>,
+  },
+  {
+    q: 'Can it make a bad trade?',
     a: (
       <>
-        No. <strong>MIRROR</strong> assets are testnet tokens priced from an Arc mainnet pool. Only <strong>REAL</strong> assets
-        are the genuine token. The badge is on every row.
+        It is built not to. Every trade has to pass your <strong>max trade size</strong>, <strong>slippage</strong>, <strong>drift range</strong> and{' '}
+        <strong>wait time</strong>. If the price is old, nothing trades. If a coin spikes far above its reference, the basket sells it to USDC.
       </>
     ),
   },
   {
     q: 'Where do prices come from?',
-    a: <>An on-chain registry written by a Chainlink CRE workflow. Each price is timestamped and stale ones are rejected.</>,
+    a: <>A Chainlink CRE workflow writes them onchain every five minutes. Each price carries the time it was taken, and old ones are refused.</>,
   },
   {
-    q: 'Who triggers a rebalance?',
-    a: <>A keeper checks every basket every couple of minutes and rebalances the ones outside their drift band. The call is permissionless, so you or your agent can also trigger it, and the contract pays the caller a small capped tip.</>,
+    q: 'Can I take my money out?',
+    a: <>Yes, anytime. Withdraw one coin or everything to any address you choose.</>,
   },
   {
-    q: 'What is a basket?',
+    q: 'Can I add more money later?',
+    a: <>Yes. Deposit more USDC whenever you like, or set a recurring buy and the basket tops itself up on your schedule.</>,
+  },
+  {
+    q: 'Are these real coins?',
     a: (
       <>
-        Your own contract holding target weights. It trades toward them within your limits; a <strong>SIP</strong> adds a
-        recurring buy. You keep custody.{' '}
-        <Link to="/buckets/new" className="text-accent hover:underline">Create a basket</Link>.
+        Not yet. Coins marked <strong>MIRROR</strong> are test tokens that track the real price on Arc mainnet. Coins marked{' '}
+        <strong>REAL</strong> are the genuine token on Arc Testnet. Every coin in the list shows which.
       </>
     ),
   },
   {
-    q: 'Which venue executes the trade?',
-    a: <>FX pairs settle on a real <strong>Uniswap v4</strong> pool. Mirror assets settle on an oracle-priced venue. Each market shows which.</>,
+    q: 'Can I still trade by hand?',
+    a: (
+      <>
+        Yes. <Link to="/trade/EURC" className={link}>Trade</Link> lets you buy or sell any listed coin against USDC. USDC and EURC trade on a real Uniswap v4 pool.
+      </>
+    ),
   },
   {
     q: 'What pays for gas?',
-    a: <>USDC is the gas token on Arc. The ticket holds back a small amount for gas and tells you when it does.</>,
+    a: <>USDC. On Arc it is also the gas token, so you never need a second coin. The app keeps a little aside for gas and tells you when it does.</>,
   },
   {
-    q: 'Is this production-ready?',
+    q: 'Is this ready for real money?',
     a: (
       <>
-        No. It runs on <strong>Arc Testnet</strong>, the CRE workflow is not yet on a decentralised oracle network, and thin
-        pools mean small trades move the price. Not investment advice.
+        No. It runs on <strong>Arc Testnet</strong> with test USDC, the price workflow is not yet on a decentralised oracle network, and test pools are
+        thin, so small trades move prices. Not investment advice.
       </>
     ),
   },
@@ -69,23 +78,23 @@ const QA: Qa[] = [
 
 export function Faq() {
   return (
-    <section aria-labelledby="faq-h">
-      <div className="mb-3">
-        <h2 id="faq-h" className="text-lg font-semibold tracking-tight">Questions</h2>
-        <p className="text-xs text-muted">Including the parts that are not finished.</p>
+    <section aria-labelledby="faq-h" className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
+      <div>
+        <p className="text-accent caption-3 uppercase tracking-wide">Questions</p>
+        <h2 id="faq-h" className="mt-3 heading-5 sm:heading-4">Straight answers, including what is not finished</h2>
       </div>
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2">
         {QA.map(({ q, a }) => (
-          <details key={q} className="group card min-w-0 p-0 [&[open]]:border-accent/40">
-            <summary className="flex cursor-pointer list-none items-start gap-2 rounded-xl p-3.5 text-sm font-medium marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
-              <ChevronDown
+          <details key={q} className="group card min-w-0 transition-colors duration-300 open:border-accent/40">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-4 title-4 marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0">{q}</span>
+              <CaretDown
                 size={16}
                 aria-hidden="true"
-                className="mt-0.5 shrink-0 text-muted transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                className="shrink-0 text-muted transition-transform duration-300 group-open:rotate-180 motion-reduce:transition-none"
               />
-              <span className="min-w-0">{q}</span>
             </summary>
-            <p className="px-3.5 pb-3.5 pl-[2.1rem] text-[13px] leading-relaxed text-muted">{a}</p>
+            <p className="px-4 pb-4 text-muted body-6">{a}</p>
           </details>
         ))}
       </div>

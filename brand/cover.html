@@ -1,0 +1,76 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#0a0b0e;color:#eceef2;font-family:Inter,sans-serif}
+.wrap{position:relative;width:100%;height:100%;padding:110px 120px}
+.grid{position:absolute;inset:0;background-image:linear-gradient(#262a33 1px,transparent 1px),linear-gradient(90deg,#262a33 1px,transparent 1px);background-size:64px 64px;opacity:.35;-webkit-mask-image:radial-gradient(ellipse 70% 80% at 72% 45%,#000 20%,transparent 75%)}
+.glow{position:absolute;width:900px;height:900px;right:-120px;top:-160px;border-radius:50%;background:radial-gradient(circle,rgba(198,244,50,.16),transparent 62%)}
+.brand{position:relative;display:flex;align-items:center;gap:22px}
+.brand img{width:84px;height:84px}
+.brand span{font-size:52px;font-weight:700;letter-spacing:-.03em}
+h1{position:relative;margin-top:84px;font-size:96px;line-height:1.02;font-weight:700;letter-spacing:-.045em;max-width:15ch}
+h1 em{font-style:normal;color:#c6f432}
+p.sub{position:relative;margin-top:34px;font-size:32px;line-height:1.4;color:#949ba8;max-width:36ch}
+.chips{position:absolute;left:120px;bottom:104px;display:flex;gap:14px}
+.chip{font:500 22px 'JetBrains Mono',monospace;padding:14px 22px;border:1px solid #2a2f3a;border-radius:999px;background:#12141999;color:#cfd3da}
+.chip b{color:#c6f432;font-weight:600}
+/* basket card */
+.card{position:absolute;right:120px;top:190px;width:640px;padding:40px;border-radius:28px;background:linear-gradient(180deg,#16181e,#121419);border:1px solid #262a33;box-shadow:0 40px 120px rgba(0,0,0,.5)}
+.ch{display:flex;justify-content:space-between;align-items:center}
+.ch .t{font-size:26px;font-weight:600}
+.pill{font:600 18px 'JetBrains Mono',monospace;color:#0e1014;background:#c6f432;padding:8px 14px;border-radius:999px}
+.donut{display:flex;align-items:center;gap:40px;margin-top:34px}
+.legend div{display:flex;align-items:center;gap:14px;font-size:22px;color:#cfd3da;margin:12px 0}
+.legend i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.legend .n{margin-left:auto;font-family:'JetBrains Mono';color:#eceef2;padding-left:20px}
+.meter{margin-top:36px}
+.ml{display:flex;justify-content:space-between;font-size:20px;color:#949ba8}
+.ml b{font-family:'JetBrains Mono';color:#eceef2;font-weight:500}
+.bar{position:relative;margin-top:14px;height:14px;border-radius:999px;background:#262a33}
+.bar .f{position:absolute;left:0;top:0;bottom:0;width:31%;border-radius:999px;background:#34d399}
+.bar .tick{position:absolute;left:50%;top:-6px;bottom:-6px;width:2px;background:#949ba8}
+.rows{margin-top:34px;border-top:1px solid #262a33;padding-top:24px}
+.row{display:flex;justify-content:space-between;font-size:21px;margin:12px 0;color:#cfd3da}
+.row span:last-child{font-family:'JetBrains Mono'}
+.ok{color:#34d399}
+</style></head><body><div class="wrap">
+<div class="grid"></div><div class="glow"></div>
+<div class="brand"><img src="arcline-logo.svg"><span>Arcline</span></div>
+<h1>Portfolios that <em>rebalance</em> themselves.</h1>
+<p class="sub">A spot DEX on Arc with auto-rebalancing USDC baskets, SIPs and on-chain risk guards.</p>
+<div class="chips">
+  <div class="chip">Built in <b>Arc Studio</b></div>
+  <div class="chip">USDC settlement</div>
+  <div class="chip">Uniswap v4</div>
+  <div class="chip">Chainlink CRE</div>
+</div>
+<div class="card">
+  <div class="ch"><span class="t">Global Balanced</span><span class="pill">IN BAND</span></div>
+  <div class="donut">
+    <svg width="210" height="210" viewBox="0 0 42 42">
+      <g fill="none" stroke-width="7" transform="rotate(-90 21 21)">
+        <circle r="15.915" cx="21" cy="21" stroke="#3987e5" stroke-dasharray="40 60"/>
+        <circle r="15.915" cx="21" cy="21" stroke="#c98500" stroke-dasharray="30 70" stroke-dashoffset="-40.5"/>
+        <circle r="15.915" cx="21" cy="21" stroke="#199e70" stroke-dasharray="19 81" stroke-dashoffset="-71"/>
+        <circle r="15.915" cx="21" cy="21" stroke="#9085e9" stroke-dasharray="9 91" stroke-dashoffset="-90.5"/>
+      </g>
+    </svg>
+    <div class="legend" style="flex:1">
+      <div><i style="background:#3987e5"></i>cirBTC<span class="n">40%</span></div>
+      <div><i style="background:#c98500"></i>XAUM<span class="n">30%</span></div>
+      <div><i style="background:#199e70"></i>EURC<span class="n">20%</span></div>
+      <div><i style="background:#9085e9"></i>USDC<span class="n">10%</span></div>
+    </div>
+  </div>
+  <div class="meter">
+    <div class="ml"><span>Drift vs band</span><b>1.6% / 5.0%</b></div>
+    <div class="bar"><div class="f"></div><div class="tick"></div></div>
+  </div>
+  <div class="rows">
+    <div class="row"><span>Price feed</span><span class="ok">fresh · CRE</span></div>
+    <div class="row"><span>Next SIP</span><span>25 USDC · weekly</span></div>
+    <div class="row"><span>Risk flags</span><span class="ok">none</span></div>
+  </div>
+</div>
+</div></body></html>

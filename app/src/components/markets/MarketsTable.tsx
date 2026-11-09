@@ -1,19 +1,27 @@
-// The exchange markets table, shared by the landing page and #/markets. Every number comes from usePriceBook.
+// The assets table (#/assets): what you can put in a basket, and whether its price is safe to rebalance
+// against right now (price, its age, risk). Every number comes from usePriceBook. No per-row charts: each
+// one was a separate GeckoTerminal request that queued ahead of the chart someone was actually opening.
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react'
 import { ASSET_NAME, CATEGORIES, type Category } from '@/lib/assets'
 import type { PriceRow } from '@/lib/prices'
 import { pct, usd } from '@/lib/format'
 import { Link, navigate } from '@/lib/router'
-import { AssetIcon, KindBadge, RiskDot, Skel, changeTone, compactUsd, useFlash } from './ui'
-import { Sparkline } from './Sparkline'
+import { AssetIcon, KindBadge, RiskDot, Skel, changeTone, useFlash } from './ui'
 
 type Tab = 'All' | Category
 const TAB_ORDER: Tab[] = ['All', ...(['FX', 'Crypto', 'RWA', 'Yield', 'Cash'] as const).filter((c) => CATEGORIES.includes(c))]
-type SortKey = 'price' | 'change' | 'liq'
+type SortKey = 'price' | 'change' | 'age'
 type Sort = { key: SortKey; dir: 'asc' | 'desc' } | null
 
-const valueOf = (r: PriceRow, k: SortKey) => (k === 'price' ? r.last : k === 'change' ? r.change24h : (r.ref?.liquidityUsd ?? null))
+const valueOf = (r: PriceRow, k: SortKey) => (k === 'price' ? r.last : k === 'change' ? r.change24h : r.oracleAgeSec)
+
+function ago(sec: number | null) {
+  if (sec === null) return '—'
+  if (sec < 60) return `${sec}s`
+  if (sec < 3600) return `${Math.floor(sec / 60)}m`
+  return `${Math.floor(sec / 3600)}h`
+}
 
 export function MarketsTable({ rows, loading, error, initialTab }: { rows: PriceRow[]; loading: boolean; error?: boolean; initialTab?: Tab }) {
   // Only the initial value: callers that need it to follow the URL remount via `key`, which keeps
@@ -59,7 +67,7 @@ export function MarketsTable({ rows, loading, error, initialTab }: { rows: Price
           ))}
         </div>
         <label className="relative block sm:w-56">
-          <span className="sr-only">Search markets</span>
+          <span className="sr-only">Search assets</span>
           <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
           <input className="field h-9 pl-8 text-[13px]" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
         </label>
@@ -71,10 +79,9 @@ export function MarketsTable({ rows, loading, error, initialTab }: { rows: Price
             <th scope="col" className="px-3 py-2 text-left font-normal">Asset</th>
             <SortTh label="Price" k="price" sort={sort} onSort={toggle} className="w-[96px] sm:w-[120px]" />
             <SortTh label="24h" k="change" sort={sort} onSort={toggle} className="w-[76px] sm:w-[92px]" />
-            <th scope="col" className="hidden w-[128px] px-3 py-2 text-right font-normal md:table-cell">24h chart</th>
-            <SortTh label="Liquidity" k="liq" sort={sort} onSort={toggle} className="hidden w-[112px] sm:table-cell" title="Arc mainnet reference pool" />
+            <SortTh label="Price age" k="age" sort={sort} onSort={toggle} className="hidden w-[96px] md:table-cell" title="Time since the oracle last reported this price" />
             <th scope="col" className="hidden w-[60px] px-3 py-2 text-left font-normal sm:table-cell lg:w-[96px]">Risk</th>
-            <th scope="col" className="hidden w-[92px] px-3 py-2 font-normal sm:table-cell"><span className="sr-only">Trade</span></th>
+            <th scope="col" className="hidden w-[208px] px-3 py-2 font-normal sm:table-cell"><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
@@ -84,19 +91,18 @@ export function MarketsTable({ rows, loading, error, initialTab }: { rows: Price
                 <td className="px-3 py-3"><Skel className="h-7 w-32" /></td>
                 <td className="px-3"><Skel className="ml-auto h-4 w-16" /></td>
                 <td className="px-3"><Skel className="ml-auto h-4 w-12" /></td>
-                <td className="hidden px-3 md:table-cell"><Skel className="ml-auto h-6 w-24" /></td>
-                <td className="hidden px-3 sm:table-cell"><Skel className="ml-auto h-4 w-14" /></td>
+                <td className="hidden px-3 md:table-cell"><Skel className="ml-auto h-4 w-10" /></td>
                 <td className="hidden px-3 sm:table-cell"><Skel className="h-4 w-10" /></td>
                 <td className="hidden px-3 sm:table-cell" />
               </tr>
             ))}
           {!loading && error && rows.length === 0 && (
-            <tr><td colSpan={7} className="px-3 py-8 text-center text-muted">Couldn't read listed assets from Arc Testnet. Retrying…</td></tr>
+            <tr><td colSpan={6} className="px-3 py-8 text-center text-muted">Couldn't read listed assets from Arc Testnet. Retrying…</td></tr>
           )}
           {!loading && !error && shown.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-3 py-8 text-center text-muted">
-                No markets match.{' '}
+              <td colSpan={6} className="px-3 py-8 text-center text-muted">
+                No assets match.{' '}
                 <button type="button" className="text-accent hover:underline" onClick={() => { setQ(''); setTab('All') }}>Clear filters</button>
               </td>
             </tr>
@@ -155,21 +161,23 @@ function Row({ r }: { r: PriceRow }) {
         {r.stale ? <span className="text-warn">—</span> : usd(r.last)}
       </td>
       <td className={`num px-3 text-right font-mono ${changeTone(r.change24h)}`} title="24h change of the Arc mainnet reference">{pct(r.change24h)}</td>
-      <td className="hidden px-3 md:table-cell">
-        <Sparkline pool={r.ref?.topPool} />
-      </td>
-      <td className="num hidden px-3 text-right font-mono text-muted sm:table-cell">{compactUsd(r.ref?.liquidityUsd)}</td>
+      <td className={`num hidden px-3 text-right font-mono md:table-cell ${r.stale ? 'text-warn' : 'text-muted'}`}>{r.stale ? 'stale' : ago(r.oracleAgeSec)}</td>
       <td className="hidden px-3 sm:table-cell">
         <span className="lg:hidden"><RiskDot level={a.risk} label={false} /></span>
         <span className="hidden lg:inline"><RiskDot level={a.risk} /></span>
       </td>
       <td className="hidden px-3 text-right sm:table-cell">
         {isCash ? (
-          <span className="text-[11px] text-faint">Quote</span>
+          <span className="text-[11px] text-faint">Deposit asset</span>
         ) : (
-          <Link to={to} onClick={(e) => e.stopPropagation()} className="btn-ghost h-8 px-3 text-xs hover:border-accent/60 hover:text-accent">
-            Trade
-          </Link>
+          <div className="flex justify-end gap-2">
+            <Link to={`/buckets/new?asset=${a.display}`} onClick={(e) => e.stopPropagation()} className="btn h-8 px-3 text-xs" aria-label={`Add ${a.display} to a new basket`}>
+              Add to basket
+            </Link>
+            <Link to={to} onClick={(e) => e.stopPropagation()} className="btn-ghost h-8 px-3 text-xs">
+              Trade
+            </Link>
+          </div>
         )}
       </td>
     </tr>

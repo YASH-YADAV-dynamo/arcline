@@ -5,39 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="Arc Studio by Circle — https://studio.arc.io" />
 
-    <title>Arcline — spot exchange & risk-managed rebalancing on Arc</title>
+    <title>Arcline: baskets that rebalance themselves on Arc</title>
     <meta
       name="description"
-      content="Trade spot on Arc Testnet through a Uniswap v4 pool, then let drift-banded buckets and SIPs rebalance the position on-chain. Every price carries its source and age."
+      content="Hold FX, gold and crypto in your own basket contract on Arc. When a weight drifts past your band it trades back to target, inside size, slippage and cooldown limits the contract enforces."
     />
     <meta name="color-scheme" content="dark light" />
     <!-- Matches --bg in src/index.css so the browser chrome does not flash white before paint. -->
-    <meta name="theme-color" content="#0a0b0e" />
+    <meta name="theme-color" content="#000000" />
 
-    <!-- The design system in tailwind.config.js asks for Inter and JetBrains Mono. Without these
-         they silently fell back to system-ui and Consolas, which also cost the tabular-numeral
-         alignment that .num relies on for price columns. -->
+    <!-- One typeface: Geist for the interface, Geist Mono only for figures (tabular numerals that
+         .num relies on for price columns). tailwind.config.js and index.css name the same families. -->
     <link rel="preconnect" href="https://rpc.testnet.arc.io" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap"
     />
 
     <!-- Inline so there is no extra request and no binary asset to track. -->
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0b0e'/%3E%3Cpath d='M7 21.5 13 11l6 10.5' stroke='%23c6f432' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='24' cy='12' r='2.6' fill='%23c6f432'/%3E%3C/svg%3E"
-    />
+    <link rel="icon" type="image/svg+xml" href="/brand/arcline-logo.svg" />
+    <link rel="apple-touch-icon" href="/brand/arcline-logo-1024.png" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Arcline" />
+    <meta property="og:title" content="Arcline: baskets that rebalance themselves" />
     <meta
       property="og:description"
-      content="Spot exchange and risk-managed rebalancing on Arc Testnet, settled through Uniswap v4."
+      content="Your own basket contract on Arc. It trades back to target when prices drift, inside limits the contract enforces."
     />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="/brand/arcline-cover-1920x1080.png" />
+    <meta property="og:image:width" content="1920" />
+    <meta property="og:image:height" content="1080" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/brand/arcline-cover-1920x1080.png" />
   </head>
   <body>
     <!-- Built with Arc Studio — https://studio.arc.io -->

@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme tokens (RGB triplets). Dark is the default; <html class="light"> switches. */
+/* Theme tokens (RGB triplets). Dark is the default; <html class="light"> switches.
+   Dark surfaces come from the approved set only: #000000 bg, #181818 panel, #1F1F1F panel2, #313131 line. */
 :root, .dark {
-  --bg: 10 11 14;        --panel: 18 20 25;     --panel2: 26 29 36;   --line: 38 42 51;
+  --bg: 0 0 0;           --panel: 24 24 24;     --panel2: 31 31 31;   --line: 49 49 49;
   --ink: 236 238 242;    --muted: 148 155 168;  --faint: 92 99 112;
   --accent: 198 244 50;  --onaccent: 14 16 20;
   --up: 52 211 153;      --down: 248 113 113;   --warn: 251 191 36;
@@ -20,13 +21,13 @@
 
 * { box-sizing: border-box; }
 html, body { background: rgb(var(--bg)); color: rgb(var(--ink)); }
-body { margin: 0; font-family: Inter, system-ui, sans-serif; font-optical-sizing: auto; min-height: 100dvh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { margin: 0; font-family: Geist, system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-/* Inter's default tracking is set for body copy and reads loose once type gets big, so headings
-   get optical tightening. Headings also lose tabular numerals deliberately: proportional digits
-   suit a title, while .num keeps price columns aligned. */
-h1, h2, h3 { letter-spacing: -0.021em; }
+/* Large type reads loose at default tracking, so headings get optical tightening. Headings also lose
+   tabular numerals deliberately: proportional digits suit a title, while .num keeps price columns aligned. */
+h1, h2, h3 { letter-spacing: -0.021em; text-wrap: balance; }
 h1 { letter-spacing: -0.028em; }
+p, li, dd { text-wrap: pretty; }
 
 /* Price and size columns must align digit-for-digit down a table; tnum also stops a changing
    quote from shifting its neighbours as digits tick over. */
@@ -34,29 +35,90 @@ h1 { letter-spacing: -0.028em; }
 
 @layer components {
   .card { @apply rounded-2xl border border-line bg-panel; }
-  .btn { @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-onaccent transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40; }
-  .btn-ghost { @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line px-4 text-sm font-medium text-ink transition hover:bg-panel2 disabled:cursor-not-allowed disabled:opacity-40; }
+  .btn { @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-onaccent transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40; }
+  .btn-ghost { @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line px-4 text-sm font-medium text-ink transition hover:bg-panel2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40; }
   .field { @apply h-10 w-full rounded-xl border border-line bg-panel2 px-3 text-sm text-ink outline-none placeholder:text-faint focus:border-accent; }
   .eyebrow { @apply font-mono text-[11px] uppercase tracking-[0.08em] text-muted; }
   .tab { @apply rounded-lg px-3 py-1.5 text-sm text-muted transition hover:text-ink; }
   .tab-on { @apply bg-panel2 text-ink; }
   .badge { @apply inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide; }
+
+  /* Named text styles. Every size is a Tailwind scale step with its paired line height; text is
+     styled through these names, never a loose size and weight. */
+  .heading-1 { @apply text-6xl font-semibold; }
+  .heading-2 { @apply text-5xl font-semibold; }
+  .heading-3 { @apply text-4xl font-semibold; }
+  .heading-4 { @apply text-3xl font-semibold; }
+  .heading-5 { @apply text-2xl font-semibold; }
+  .heading-6 { @apply text-xl font-semibold; }
+  .title-1 { @apply text-xl font-medium; }
+  .title-2 { @apply text-lg font-medium; }
+  .title-3 { @apply text-base font-medium; }
+  .title-4 { @apply text-sm font-medium; }
+  .title-5 { @apply text-xs font-medium; }
+  .body-1 { @apply text-base font-semibold; }
+  .body-2 { @apply text-base font-medium; }
+  .body-3 { @apply text-base font-normal; }
+  .body-4 { @apply text-sm font-semibold; }
+  .body-5 { @apply text-sm font-medium; }
+  .body-6 { @apply text-sm font-normal; }
+  .body-7 { @apply text-lg font-normal; }   /* added for large lead copy: text-lg, regular */
+  .button-lg { @apply text-lg font-semibold; }
+  .button-md { @apply text-base font-semibold; }
+  .button-sm { @apply text-sm font-semibold; }
+  .button-xsm { @apply text-xs font-semibold; }
+  .caption-1 { @apply text-sm font-medium; }
+  .caption-2 { @apply text-sm font-normal; }
+  .caption-3 { @apply text-xs font-semibold; }
+  .caption-4 { @apply text-xs font-medium; }
+  .caption-5 { @apply text-xs font-normal; }
+
+  /* Landing buttons: 8px by 12px padding, full state set (hover, active, focus, disabled). */
+  .cta, .cta-sm {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3 py-2 font-semibold text-onaccent
+      transition duration-300 hover:brightness-110 active:scale-[0.98]
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .cta { @apply text-base; }    /* Button-md */
+  .cta-sm { @apply text-sm; }   /* Button-sm */
+  .link-quiet {
+    @apply inline-flex items-center gap-1 rounded text-muted transition duration-300 hover:text-ink
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent;
+  }
+
+  /* Hero heading: the one place a gradient is allowed, and only on text. */
+  .hero-ink {
+    background-image: linear-gradient(to right, #ffffff, #9b9b9b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .light .hero-ink { background-image: linear-gradient(to right, #000000, #666666); }
 }
 
-/* "Built with Arc Studio" badge offset (main.tsx reads it): above the mobile tab bar / desktop status bar. */
-:root { --badge-bottom: calc(68px + env(safe-area-inset-bottom)); }
+/* "Built with Arc Studio" badge offset (main.tsx reads it): above the desktop status bar. */
+:root { --badge-bottom: calc(16px + env(safe-area-inset-bottom)); }
 @media (min-width: 768px) { :root { --badge-bottom: 40px; } }
 
-/* Ticker tape: two copies of the list slide left by one copy's width; pauses on hover/focus. */
+/* Ticker tape: two copies of the list slide left by one copy's width; pauses on hover/focus.
+   A marquee is the one place a constant speed is correct, so it keeps a linear curve. */
 @keyframes tape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .tape { animation: tape 60s linear infinite; }
 .tape:hover, .tape:focus-within { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .tape { animation: none; } }
 
-/* Scroll reveal + hero entrance. Motion is opt-in: users who prefer reduced motion get the final state. */
+/* Scroll reveal + hero entrance on the base curve. Motion is opt-in: users who prefer reduced
+   motion get the final state, with no movement. */
 @media (prefers-reduced-motion: no-preference) {
-  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); will-change: opacity, transform; }
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); will-change: opacity, transform; }
   .reveal[data-shown='true'] { opacity: 1; transform: none; will-change: auto; }
-  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-  .rise { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .7s cubic-bezier(.22,1,.36,1) both; }
 }
+
+/* Landing coins (CoinStage): a constant spin on the Y axis. Like the ticker tape, a steady rotation
+   is the one place a linear curve is correct; every position change uses the base curve. */
+@keyframes coin-spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+.coin-spin { animation: coin-spin 16s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .coin-spin { animation: none; } }

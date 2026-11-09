@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { useRoute } from '@/lib/router'
 import { Shell } from '@/components/Shell'
 import Landing from '@/pages/Landing'
+import { warmFeed } from '@/lib/feed'
 
 // Landing ships in the main bundle (first paint needs it). Every other page is its own chunk, and
 // the likely next ones are fetched while the browser is idle so navigating feels instant.
@@ -27,6 +28,8 @@ function prefetchPages() {
   const run = () => {
     void load.trade()
     void load.markets()
+    // Warm the server built chart snapshots (one file each), so the first chart draws from memory.
+    void warmFeed()
   }
   if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 4000 })
   else setTimeout(run, 2000)
@@ -55,10 +58,9 @@ function NotFound({ path }: { path: string }) {
       <nav className="mt-2 flex flex-wrap justify-center gap-2">
         {[
           ['/', 'Home'],
-          ['/markets', 'Markets'],
-          ['/trade/EURC', 'Trade'],
-          ['/portfolio', 'Portfolio'],
           ['/baskets', 'Baskets'],
+          ['/portfolio', 'Portfolio'],
+          ['/assets', 'Assets'],
           ['/agents', 'Agents'],
         ].map(([to, label]) => (
           <a key={to} href={`#${to}`} className="h-9 rounded-lg border border-line px-3 text-xs leading-9 hover:bg-panel2">
@@ -75,7 +77,8 @@ export default function App() {
   const [page, arg] = parts
   let view
   if (!page) view = <Landing />
-  else if (page === 'markets' && !arg) view = <Markets />
+  // `assets` is the public name; `markets` stays as an alias so existing links keep working.
+  else if ((page === 'assets' || page === 'markets') && !arg) view = <Markets />
   else if (page === 'trade' && arg) view = <Trade symbol={arg} />
   else if (page === 'trade' && !arg) view = <Trade symbol="EURC" />
   else if (page === 'portfolio' && !arg) view = <Portfolio />

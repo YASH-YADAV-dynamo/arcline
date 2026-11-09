@@ -14,7 +14,7 @@ type MarketItem = { kind: 'market'; id: string; row: PriceRow; name: string }
 type Item = PageItem | MarketItem
 
 const PAGES: PageItem[] = [
-  { kind: 'page', id: 'p-markets', label: 'Markets', hint: 'All listed assets', to: '/markets', words: 'markets list assets prices' },
+  { kind: 'page', id: 'p-markets', label: 'Assets', hint: 'What a basket can hold', to: '/assets', words: 'assets markets list prices tokens' },
   { kind: 'page', id: 'p-trade', label: 'Trade', hint: 'Buy and sell', to: '/trade/EURC', words: 'trade swap buy sell' },
   { kind: 'page', id: 'p-baskets', label: 'Baskets', hint: 'Your baskets and templates', to: '/baskets', words: 'baskets basket bucket buckets allocation rebalance' },
   { kind: 'page', id: 'p-portfolio', label: 'Portfolio', hint: 'Balances and baskets', to: '/portfolio', words: 'portfolio balances holdings' },
