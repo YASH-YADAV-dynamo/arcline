@@ -17,7 +17,7 @@ import { Skel } from '@/components/trade/ui'
 type Screen = 'chart' | 'trade' | 'trades'
 
 // while the sticky Buy/Sell bar shows, lift the "Built with Arc Studio" badge (positioned by --badge-bottom) above it
-const BADGE_LIFT = `@media (max-width: 767px){:root{--badge-bottom:calc(132px + env(safe-area-inset-bottom))}}@media (min-width: 768px) and (max-width: 1023px){:root{--badge-bottom:76px}}`
+const BADGE_LIFT = `@media (max-width: 767px){:root{--badge-bottom:calc(76px + env(safe-area-inset-bottom))}}@media (min-width: 768px) and (max-width: 1023px){:root{--badge-bottom:76px}}`
 
 /** Prefill from the hash query, e.g. #/trade/EURC?amount=100&side=buy (landing quick-swap). */
 function readPrefill(): { amount: string; side: Side | undefined } {
@@ -90,7 +90,7 @@ export default function Trade({ symbol }: { symbol: string }) {
         </section>
 
         {/* mobile screen switch */}
-        <nav aria-label="Trade screens" className="sticky top-[88px] z-20 -mx-2 bg-bg/90 px-2 py-1 backdrop-blur lg:hidden">
+        <nav aria-label="Trade screens" className="sticky top-20 z-20 -mx-2 bg-bg/90 px-2 py-1 backdrop-blur lg:hidden">
           <div className="grid grid-cols-3 rounded-xl bg-panel2 p-1">
             {([['chart', 'Chart'], ['trade', 'Trade'], ['trades', 'Trades']] as const).map(([s, l]) => (
               <button key={s} type="button" aria-pressed={screen === s} onClick={() => setScreen(s)}
@@ -136,7 +136,7 @@ export default function Trade({ symbol }: { symbol: string }) {
 
       {/* sticky Buy / Sell (mobile, when the ticket screen is not showing) */}
       {tradable && screen !== 'trade' && (
-        <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-bg/95 px-3 py-2 backdrop-blur-md md:bottom-0 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-md lg:hidden">
           <div className="mx-auto grid max-w-xl grid-cols-2 gap-2">
             <button type="button" className="btn h-11 !bg-up" onClick={() => setSheet('buy')}>Buy {tradable.asset.display}</button>
             <button type="button" className="btn h-11 !bg-down" onClick={() => setSheet('sell')}>Sell {tradable.asset.display}</button>

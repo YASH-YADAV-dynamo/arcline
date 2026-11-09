@@ -8,9 +8,12 @@ import { gtFromFeed } from './feed'
 // never makes a cross-origin call and a missing CORS header upstream cannot break charts.
 const BASE = '/gt/api/v2/networks/arc'
 const cache = new Map<string, { at: number; data: unknown }>()
-let chain: Promise<unknown> = Promise.resolve()
+// Two queues. Table rows (price, 24h, liquidity for every asset) go in 'bg'; the chart someone is
+// looking at goes in 'chart', so it never waits behind a dozen row requests.
+type Lane = 'bg' | 'chart'
+const chains: Record<Lane, Promise<unknown>> = { bg: Promise.resolve(), chart: Promise.resolve() }
 
-async function get<T>(path: string): Promise<T | null> {
+async function get<T>(path: string, lane: Lane = 'bg'): Promise<T | null> {
   const hit = cache.get(path)
   if (hit && Date.now() - hit.at < 60_000) return hit.data as T
   // server snapshot first: one shared request instead of a rate-limited call per path
@@ -20,18 +23,18 @@ async function get<T>(path: string): Promise<T | null> {
     return fed
   }
   // serialize requests ~400ms apart (about 25/min max under bursts with caching)
-  const run = chain.then(async () => {
+  const run = chains[lane].then(async () => {
     // the public API rate-limits per IP (HTTP 429, sent without CORS headers so it surfaces as a network error):
     // back off inside the queue and retry twice before giving up
     for (let attempt = 0; ; attempt++) {
-      await new Promise((r) => setTimeout(r, attempt ? 2000 * attempt : 400))
+      await new Promise((r) => setTimeout(r, attempt ? 2000 * attempt : lane === 'chart' ? 0 : 400))
       const res = await fetch(`${BASE}${path}`, { headers: { accept: 'application/json' } }).catch(() => null)
       if ((!res || res.status === 429) && attempt < 2) continue
       if (!res || !res.ok) throw new Error(`gecko ${res?.status ?? 'network'}`)
       return (await res.json()) as unknown
     }
   })
-  chain = run.catch(() => undefined)
+  chains[lane] = run.catch(() => undefined)
   try {
     const data: unknown = await run
     cache.set(path, { at: Date.now(), data })
@@ -95,7 +98,7 @@ export const TIMEFRAMES: Record<Timeframe, { res: 'minute' | 'hour' | 'day'; agg
 export async function fetchOhlcv(pool: string, tf: Timeframe, token?: string | null): Promise<Candle[]> {
   const t = TIMEFRAMES[tf]
   const q = `aggregate=${t.agg}&limit=${t.limit}&currency=usd${token ? `&token=${token}` : ''}`
-  const r = await get<Ohlcv>(`/pools/${pool}/ohlcv/${t.res}?${q}`)
+  const r = await get<Ohlcv>(`/pools/${pool}/ohlcv/${t.res}?${q}`, 'chart')
   const list = r?.data?.attributes?.ohlcv_list
   if (!list) throw new Error('candles unavailable') // let react-query retry with backoff
   return list

@@ -32,3 +32,6 @@ export async function gtFromFeed<T>(path: string): Promise<T | undefined> {
   const s = await gtSnap()
   return (s?.r[path]?.j as T | undefined) ?? undefined
 }
+
+/** Start both snapshot downloads early (idle time after first paint) so the first chart reads from memory. */
+export const warmFeed = () => Promise.all([gtSnap(), pointsSnap()])

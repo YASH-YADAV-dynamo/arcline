@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { usePublicClient } from 'wagmi'
 import { arcTestnet } from 'viem/chains'
 import { ADDR, registryAbi } from './contracts'
+import { liveStatus } from './live'
 
 export const CATEGORIES = ['Cash', 'FX', 'Crypto', 'Yield', 'RWA'] as const
 export type Category = (typeof CATEGORIES)[number]
@@ -32,38 +33,39 @@ export function useAssets() {
   return useQuery({
     queryKey: ['assets'],
     enabled: Boolean(client),
-    refetchInterval: 30_000,
+    // The WebSocket patches prices and risk as they land (lib/live.ts), so polling is only a safety net.
+    refetchInterval: () => (liveStatus() === 'live' ? 120_000 : 30_000),
     queryFn: async (): Promise<ListedAsset[]> => {
       const c = client!
       const tokens = await c.readContract({ address: ADDR.registry, abi: registryAbi, functionName: 'assets' })
-      return Promise.all(
-        tokens.map(async (t) => {
-          const a = await c.readContract({ address: ADDR.registry, abi: registryAbi, functionName: 'assetOf', args: [t] })
-          const risk = await c.readContract({ address: ADDR.registry, abi: registryAbi, functionName: 'riskOf', args: [t] })
-          let priceE8: bigint | null = null
-          let observedAt: number | null = null
-          try {
-            const [p, at] = await c.readContract({ address: ADDR.registry, abi: registryAbi, functionName: 'priceE8', args: [t] })
-            priceE8 = p
-            observedAt = Number(at)
-          } catch {
-            /* stale or unset -> trading disabled */
-          }
-          return {
-            token: t,
-            symbol: a.symbol,
-            display: a.symbol.replace(/\.m$/, ''),
-            category: CATEGORIES[Number(a.category)] ?? 'Cash',
-            decimals: Number(a.decimals),
-            venue: a.venue,
-            mirror: a.mirror,
-            mainnetRef: a.mainnetRef,
-            priceE8,
-            observedAt,
-            risk: Number(risk),
-          }
-        }),
-      )
+      // One multicall (Multicall3 is deployed on Arc Testnet) instead of three calls per token: the
+      // public RPC rate-limits bursts, and this list gates every price, table and chart in the app.
+      const calls = tokens.flatMap((t) => [
+        { address: ADDR.registry, abi: registryAbi, functionName: 'assetOf', args: [t] } as const,
+        { address: ADDR.registry, abi: registryAbi, functionName: 'riskOf', args: [t] } as const,
+        { address: ADDR.registry, abi: registryAbi, functionName: 'priceE8', args: [t] } as const,
+      ])
+      const res = await c.multicall({ contracts: calls, allowFailure: true })
+      return tokens.flatMap((t, i) => {
+        const [meta, risk, price] = [res[i * 3], res[i * 3 + 1], res[i * 3 + 2]]
+        if (meta.status !== 'success') return []
+        const a = meta.result as { symbol: string; category: number; decimals: number; venue: `0x${string}`; mirror: boolean; mainnetRef: string }
+        // priceE8 reverts when the price is stale or unset: trading stays disabled for that asset
+        const p = price.status === 'success' ? (price.result as readonly [bigint, bigint]) : null
+        return [{
+          token: t,
+          symbol: a.symbol,
+          display: a.symbol.replace(/\.m$/, ''),
+          category: CATEGORIES[Number(a.category)] ?? 'Cash',
+          decimals: Number(a.decimals),
+          venue: a.venue,
+          mirror: a.mirror,
+          mainnetRef: a.mainnetRef,
+          priceE8: p ? p[0] : null,
+          observedAt: p ? Number(p[1]) : null,
+          risk: risk.status === 'success' ? Number(risk.result) : 0,
+        }]
+      })
     },
   })
 }

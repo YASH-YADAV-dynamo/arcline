@@ -6,6 +6,7 @@
 //
 // Volume is genuinely 0 for an oracle series — CandleChart hides the volume pane in this mode
 // rather than drawing an empty strip.
+import { liveStatus } from './live'
 import { useQuery } from '@tanstack/react-query'
 import { usePublicClient } from 'wagmi'
 import { arcTestnet } from 'viem/chains'
@@ -87,7 +88,8 @@ export function useOraclePoints(token: `0x${string}` | undefined, enabled = true
     queryKey: ['oraclePoints', token?.toLowerCase()],
     enabled: Boolean(client && token && enabled),
     staleTime: 60_000,
-    refetchInterval: 60_000,
+    // new reports arrive over the WebSocket (lib/live.ts appends them); poll only when it is down
+    refetchInterval: () => (liveStatus() === 'live' ? 300_000 : 60_000),
     queryFn: async (): Promise<Point[]> => {
       // server-indexed history: one static file instead of a chunked eth_getLogs walk in the browser
       const snap = await pointsSnap()

@@ -11,7 +11,11 @@ export default {
         ink: v('ink'), muted: v('muted'), faint: v('faint'),
         accent: v('accent'), up: v('up'), down: v('down'), warn: v('warn'), onaccent: v('onaccent'),
       },
-      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'] },
+      fontFamily: { sans: ['Geist', 'system-ui', 'sans-serif'], mono: ['"Geist Mono"', 'ui-monospace', 'monospace'] },
+      // One motion curve for the whole app: weighted, decelerating into place. Plain `transition`
+      // picks it up, so no element ships a browser default curve.
+      transitionTimingFunction: { DEFAULT: 'cubic-bezier(0.22, 1, 0.36, 1)', base: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+      transitionDuration: { DEFAULT: '200ms' },
     },
   },
   plugins: [],

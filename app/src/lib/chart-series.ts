@@ -10,6 +10,7 @@ import { useMemo } from 'react'
 import { TIMEFRAMES, useOhlcv, type Timeframe } from './market'
 import { fillGaps, foldCandles, realCount, useOraclePoints, viableTimeframes, type ChartCandle } from './candles'
 import type { PriceRow } from './prices'
+import { SNAPSHOT_AT, snapshotOf } from './market-snapshots'
 
 export type ChartSource = 'arc' | 'onchain'
 export type ChartSeries = {
@@ -26,7 +27,33 @@ export type ChartSeries = {
   viable: Set<Timeframe>
   /** the timeframe actually drawn; may differ from the requested one when that cannot draw */
   tf: Timeframe
+  /** true while showing the bundled snapshot because live data has not arrived yet */
+  placeholder?: boolean
 }
+
+/** Bundled hourly closes (src/data/market-snapshots.json) folded to a timeframe, so a chart can draw
+ *  on first paint instead of after the network round trips. Closes only: each candle opens at the
+ *  previous close, so there are no invented wicks. Not for 15m (the snapshot is hourly). */
+function snapshotCandles(display: string, tf: Timeframe): ChartCandle[] {
+  const snap = snapshotOf(display)
+  if (!snap?.candles.length || tf === '15m') return []
+  const sec = TIMEFRAMES[tf].sec
+  const out: ChartCandle[] = []
+  let prev = snap.candles[0][1]
+  for (const [t, c, v] of snap.candles) {
+    const b = Math.floor(t / sec) * sec
+    const last = out[out.length - 1]
+    if (last && last.t === b) {
+      last.c = c
+      last.h = Math.max(last.h, c)
+      last.l = Math.min(last.l, c)
+      last.v += v
+    } else out.push({ t: b, o: prev, h: Math.max(prev, c), l: Math.min(prev, c), c, v })
+    prev = c
+  }
+  return out
+}
+const SNAP_DAY = new Date(SNAPSHOT_AT).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
 export function useChartSeries(row: PriceRow, tf: Timeframe): ChartSeries {
   const a = row.asset
@@ -72,6 +99,21 @@ export function useChartSeries(row: PriceRow, tf: Timeframe): ChartSeries {
       noMainnetPool,
       viable: onchainViable,
       tf: effTf,
+    }
+  }
+  const loading = t1.isLoading || pts.isLoading
+  const snap = loading ? snapshotCandles(a.display, tf) : []
+  if (snap.length >= 2) {
+    return {
+      candles: snap,
+      source: 'arc',
+      label: `Arc mainnet snapshot from ${SNAP_DAY}, loading live data`,
+      showVolume: true,
+      loading: false,
+      noMainnetPool: false,
+      viable: new Set(Object.keys(TIMEFRAMES) as Timeframe[]),
+      tf,
+      placeholder: true,
     }
   }
   return {

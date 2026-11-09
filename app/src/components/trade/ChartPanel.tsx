@@ -144,7 +144,8 @@ export function ChartBody({ row, refLoading }: { row: PriceRow; refLoading: bool
         </div>
       </div>
 
-      {waitingPool || series.loading ? (
+      {/* the bundled snapshot can draw before the pool lookup finishes, so it skips the wait */}
+      {(waitingPool && !series.placeholder) || series.loading ? (
         <ChartSkeleton height={height} />
       ) : candles.length < 2 ? (
         <Empty

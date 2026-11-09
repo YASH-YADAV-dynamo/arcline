@@ -6,6 +6,10 @@ import { Faq } from '@/components/landing/Faq'
 import { Categories } from '@/components/landing/Categories'
 import { RebalanceSpotlight } from '@/components/landing/RebalanceSpotlight'
 import { Hero } from '@/components/landing/Hero'
+import { TaglineReveal } from '@/components/landing/TaglineReveal'
+import { Benefits } from '@/components/landing/Benefits'
+import { HowItWorks } from '@/components/landing/HowItWorks'
+import { FinalCta } from '@/components/landing/FinalCta'
 import { FaucetNotice } from '@/components/trade/FaucetNotice'
 import { LowLiquidityNotice } from '@/components/trade/LowLiquidityNotice'
 import { Reveal } from '@/components/Reveal'
@@ -60,8 +64,17 @@ check('Faucet notice links to Circle faucet in a new tab', faucet.includes('http
 const warnGbpa = t('LowLiquidityNotice renders (GBPA)', () => renderToString(<LowLiquidityNotice symbol="GBPA" />))
 const warnEurc = renderToString(<LowLiquidityNotice symbol="EURC" />)
 check('Low-liquidity warning: shown for GBPA, absent for EURC', warnGbpa.includes('Low liquidity') && warnEurc === '', 'yellow note only on thin markets')
-check('Spotlight shows all 4 guardrails + labelled example', ['Max trade size', 'Drift band', 'Cooldown', 'Slippage cap', 'Illustrative'].every((x) => spot.includes(x)), 'gates + disclaimer present')
-check('Hero names Arc and RWAs and leads with baskets + auto-rebalancing', hero.includes('real-world assets') && hero.includes('Arc') && hero.includes('Auto-rebalancing') && hero.includes('Create a basket'), 'wording present')
+check('Problem section maps to the real gates', ['drift band', 'max trade size', 'slippage', 'cooldown', 'stale price'].every((x) => spot.toLowerCase().includes(x)), 'gates named')
+check('Hero has one primary action and a labelled illustrative preview', (hero.match(/Create a basket/g) ?? []).length === 1 && hero.includes('Illustrative') && hero.includes('Arc'), 'one CTA + disclaimer')
+const tag = t('TaglineReveal renders', () => renderToString(<TaglineReveal />))
+check('Tagline is fully lit server side (animation can never hide it)', !tag.includes('opacity-30'), 'no muted words in SSR output')
+t('Benefits renders', () => renderToString(<Benefits />))
+t('HowItWorks renders', () => renderToString(<HowItWorks />))
+const fin = t('FinalCta renders', () => renderToString(<FinalCta />))
+check('Final CTA repeats the hero action', fin.includes('Create a basket') && fin.includes('faucet.circle.com'), 'same CTA + faucet link')
+const copy = [hero, spot, tag, fin, faq].join(' ').replace(/<[^>]+>/g, ' ')
+const hyph = copy.match(/[A-Za-z]-[A-Za-z]/g) ?? []
+check('No hyphens inside landing copy', hyph.length === 0, hyph.length ? `found: ${hyph.slice(0, 5).join(', ')}` : 'none')
 
 check('Reveal renders its children (never hides content server-side)', renderToString(<Reveal><i>kept</i></Reveal>).includes('kept'), 'children present')
 
@@ -78,7 +91,7 @@ t('CandleChart flat series (bh<2 -> solid)', () => chart(40, true))
 t('CandleChart single candle', () => chart(1))
 
 // Assertions on what the markup actually contains, not just that it rendered.
-check('Faq has 9 details elements', (faq.match(/<details/g) ?? []).length === 9, `${(faq.match(/<details/g) ?? []).length} found`)
+check('Faq has 10 details elements', (faq.match(/<details/g) ?? []).length === 10, `${(faq.match(/<details/g) ?? []).length} found`)
 check('Categories shows Blue chips + RWA', cats.includes('Blue chips') && /<h3[^>]*>RWA</.test(cats), 'both tiles present')
 check('Categories excludes USDC (cash)', !/>USDC</.test(cats), 'USDC not listed as a tradable class')
 check('Categories links carry class filter', cats.includes('class=RWA'), 'href has ?class=RWA')
