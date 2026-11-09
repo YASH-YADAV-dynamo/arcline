@@ -2,6 +2,9 @@
 # Build Arcline locally, push the image to ECR, and run it on the EC2 box via SSM. Run from the repo root:
 #   bash deploy/release.sh
 set -euo pipefail
+# Deploy freeze (Nov 2026): prices are stale until a price reporter is running again, so nothing ships
+# by accident. Override deliberately with: DEPLOY=1 bash deploy/release.sh
+if [ "${DEPLOY:-0}" != "1" ]; then echo "Deploys are frozen. Re-run with DEPLOY=1 to ship anyway." >&2; exit 1; fi
 REGION=ap-south-1
 INSTANCE=${INSTANCE:-i-0b0c935bda5d40a9f}
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
