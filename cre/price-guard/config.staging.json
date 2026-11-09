@@ -1,5 +1,5 @@
 {
-  "schedule": "0 */5 * * * *",
+  "schedule": "0 * * * * *",
   "chainSelectorName": "arc-testnet",
   "registry": "0x79E37808c2187B949D36c0295C7947154CD85A47",
   "receiver": "0x97f154f7991948bcd218e96300a50b053eec04dd",
@@ -40,11 +40,50 @@
   "eurc": {
     "token": "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
     "stateView": "0xF3334192D15450CdD385c8B70e03f9A6bD9E673b",
-    "poolId": "0xf775c49a5149d5d85f0667782c0b5ccde7fbaeeac0cdbe0ea3b47eea8d7829ea"
+    "poolId": "0xf775c49a5149d5d85f0667782c0b5ccde7fbaeeac0cdbe0ea3b47eea8d7829ea",
+    "mainnetRef": "0xbeF5f6d51Cb62B58E6a8f77868681825C6fE21c1"
   },
   "guard": {
     "watchPct": 5,
     "noBuyPct": 10,
     "exitPct": 20
+  },
+  "chainlink": {
+    "chainSelectorName": "ethereum-mainnet",
+    "heartbeatMarginSec": 600,
+    "maxDevPct": 1.5,
+    "poolMaxDevPct": 1,
+    "feeds": [
+      {
+        "symbol": "cirBTC.m",
+        "pair": "BTC / USD",
+        "proxy": "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
+        "heartbeatSec": 3600
+      },
+      {
+        "symbol": "WETH.m",
+        "pair": "ETH / USD",
+        "proxy": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+        "heartbeatSec": 3600
+      },
+      {
+        "symbol": "EURC",
+        "pair": "EUR / USD",
+        "proxy": "0xb49f677943BC038e9857d61E7d053CaA2C1734C1",
+        "heartbeatSec": 86400
+      },
+      {
+        "symbol": "GBPA.m",
+        "pair": "GBP / USD",
+        "proxy": "0x5c0Ab2d9b5a7ed9f470386e82BB36A3613cDd4b5",
+        "heartbeatSec": 86400
+      },
+      {
+        "symbol": "XAUM.m",
+        "pair": "XAU / USD",
+        "proxy": "0x214eD9Da11D2fbe465a6fc601a91E62EbEc1a0D6",
+        "heartbeatSec": 86400
+      }
+    ]
   }
 }
