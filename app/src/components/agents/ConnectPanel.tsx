@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { DownloadSimple } from '@phosphor-icons/react'
 import { useAssets } from '@/lib/assets'
 import { downloadText } from '@/lib/agent-account'
 import { CodeBlock } from './CodeBlock'
@@ -15,22 +15,22 @@ export function ConnectPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="card p-4 sm:p-5">
-        <p className="text-sm text-muted">
-          Agents read markets straight from the on-chain AssetRegistry. <code className="font-mono text-ink">priceE8</code> reverts
-          when a price is stale, so a missing price means trading is disabled for that asset. A new token address in{' '}
-          <code className="font-mono text-ink">assets()</code> is a new market.
+      <div className="card p-5 sm:p-6">
+        <h3 className="title-4">Market list for your agent</h3>
+        <p className="mt-2 text-muted body-6">
+          Every coin, its venue and its live price come from the registry contract. When a price is too old, reading it fails, which means
+          that coin cannot be traded right now. A new address in <code className="font-mono text-ink">assets()</code> is a new market.
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button type="button" className="btn" onClick={download} disabled={!list}>
-            <Download size={15} aria-hidden /> Download agent context (.json)
+        <div className="mt-5 flex flex-wrap items-center gap-4">
+          <button type="button" className="cta-sm disabled:cursor-not-allowed disabled:opacity-40" onClick={download} disabled={!list}>
+            <DownloadSimple size={16} weight="bold" aria-hidden /> Download market list (.json)
           </button>
-          <span className="text-xs text-muted" aria-live="polite">
-            {assets.isLoading ? 'Reading the registry…' : assets.isError ? 'Could not read the registry.' : `${list?.length ?? 0} markets in the snapshot`}
+          <span className="text-muted caption-2" aria-live="polite">
+            {assets.isLoading ? 'Reading the registry…' : assets.isError ? 'Could not read the registry.' : `${list?.length ?? 0} markets`}
           </span>
         </div>
       </div>
-      <CodeBlock title="Read markets and watch listings (Node, viem)" code={READ_SNIPPET} />
+      <CodeBlock title="Read prices and watch for listings (Node and viem)" code={READ_SNIPPET} />
       <CodeBlock title="Run the example agent" code={RUN_SNIPPET} />
     </div>
   )

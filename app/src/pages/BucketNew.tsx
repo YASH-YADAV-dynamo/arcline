@@ -12,7 +12,7 @@ import { findAsset, useAssets, type ListedAsset } from '@/lib/assets'
 import { amt, bps, usd } from '@/lib/format'
 import { Link, navigate } from '@/lib/router'
 import { useTx } from '@/lib/tx'
-import { BOUNDS, DEFAULT_PARAMS, duration, useNow, useTemplates, useUsdc, type Params, type Template } from '@/components/bucket/data'
+import { BOUNDS, DEFAULT_PARAMS, duration, featured, useNow, useTemplates, useUsdc, type Params, type Template } from '@/components/bucket/data'
 import { ParamsForm, paramsError } from '@/components/bucket/ParamsForm'
 import { TargetsEditor, targetsError, type Row } from '@/components/bucket/TargetsEditor'
 import { createdBucket } from '@/components/bucket/TemplateGallery'
@@ -219,10 +219,10 @@ export default function BucketNew() {
           {step === 0 && (
             <Panel title="How do you want to start?" hint="Ready baskets are starting points, not advice. You can edit any of them.">
               {templates.isLoading ? (
-                <div className="grid gap-3 sm:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-32" />)}</div>
+                <div className="grid gap-3 sm:grid-cols-2">{[0, 1].map((i) => <Skeleton key={i} className="h-32" />)}</div>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {(templates.data ?? []).map((t) => {
+                  {featured(templates.data).map((t) => {
                     const on = from?.id === t.id
                     return (
                       <button

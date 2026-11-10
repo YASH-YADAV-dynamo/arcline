@@ -3,7 +3,7 @@ import { ArrowRight } from '@phosphor-icons/react'
 import { useAssets } from '@/lib/assets'
 import { bps } from '@/lib/format'
 import { Link } from '@/lib/router'
-import { useTemplates, type Template } from '@/components/bucket/data'
+import { featured, useTemplates, type Template } from '@/components/bucket/data'
 import { RISK_LABEL } from '@/components/trade/hooks'
 import { RiskDot, Skel, assetColor } from '@/components/markets/ui'
 
@@ -27,8 +27,8 @@ export function BucketsShowcase() {
       {templates.isError ? (
         <div className="card p-6 text-muted body-6">Templates could not be read from Arc Testnet. Refresh the page, or <Link to="/buckets/new" className="text-accent underline-offset-4 hover:underline">build a custom basket</Link>.</div>
       ) : templates.isLoading || !templates.data ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading templates">
-          {[0, 1, 2].map((i) => (
+        <div className="grid gap-4 sm:grid-cols-2" role="status" aria-label="Loading templates">
+          {[0, 1].map((i) => (
             <div key={i} className="card space-y-3 p-6" aria-hidden>
               <Skel className="h-5 w-28" />
               <Skel className="h-2 w-full" />
@@ -36,11 +36,11 @@ export function BucketsShowcase() {
             </div>
           ))}
         </div>
-      ) : templates.data.length === 0 ? (
+      ) : featured(templates.data).length === 0 ? (
         <div className="card p-6 text-muted body-6">No templates are published yet. <Link to="/buckets/new" className="text-accent hover:underline">Build a custom basket</Link></div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.data.slice(0, 6).map((t) => (
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {featured(templates.data).map((t) => (
             <Card key={t.id.toString()} t={t} symbolOf={(tok) => byToken.get(tok.toLowerCase())?.display ?? `${tok.slice(0, 6)}…`} riskOf={(tok) => byToken.get(tok.toLowerCase())?.risk ?? 0} />
           ))}
         </ul>

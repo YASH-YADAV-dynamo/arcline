@@ -10,7 +10,7 @@ import { useAssets } from '@/lib/assets'
 import { bps } from '@/lib/format'
 import { navigate } from '@/lib/router'
 import { useTx } from '@/lib/tx'
-import { useTemplates, type Template } from './data'
+import { featured, useTemplates, type Template } from './data'
 import { WeightsBar } from './charts'
 import { Skeleton, act } from './ui'
 
@@ -76,16 +76,16 @@ export function TemplateGallery() {
   const { data, isLoading, isError } = useTemplates()
   if (isLoading) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {[0, 1].map((i) => <Skeleton key={i} className="h-56" />)}
       </div>
     )
   }
   if (isError) return <p className="text-sm text-muted">Couldn't load templates from the registry.</p>
   if (!data?.length) return <p className="text-sm text-muted">No templates published yet.</p>
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {data.map((t) => <TemplateCard key={String(t.id)} t={t} />)}
+    <div className="grid gap-3 sm:grid-cols-2">
+      {featured(data).map((t) => <TemplateCard key={String(t.id)} t={t} />)}
     </div>
   )
 }

@@ -77,6 +77,16 @@ export type Template = {
   rationaleHash: Hex
 }
 
+/** The ready baskets the app offers. The others stay onchain (baskets that follow them still read their
+ *  names) but are not offered. These two only hold USDC (cash, never traded) and mirror assets, which
+ *  fill at the oracle price on the mirror venue, so there is no pool depth to run out:
+ *    0 Blue Chips    cirBTC 50 / WETH 50
+ *    2 Stable Yield  USDC 50 / syrupUSDC 50
+ *  Left out: Global FX and All-Weather (EURC trades in a thin test pool), Real Assets (ASTOCK). */
+export const FEATURED_TEMPLATES: readonly bigint[] = [0n, 2n]
+export const featured = (list: Template[] | undefined) =>
+  FEATURED_TEMPLATES.map((id) => list?.find((t) => t.id === id)).filter((t): t is Template => Boolean(t))
+
 export function useTemplates() {
   const client = useArcClient()
   return useQuery({

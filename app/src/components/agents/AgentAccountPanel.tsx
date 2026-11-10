@@ -5,7 +5,7 @@ import { useAccount, useReadContract } from 'wagmi'
 import { arcTestnet } from 'viem/chains'
 import { erc20Abi, parseUnits } from 'viem'
 import { toast } from 'sonner'
-import { ExternalLink, KeyRound, Plus, ShieldAlert, Trash2 } from 'lucide-react'
+import { ArrowUpRight, Key, Plus, ShieldWarning, Trash } from '@phosphor-icons/react'
 import { ADDR } from '@/lib/contracts'
 import { addrUrl, amt, short } from '@/lib/format'
 import { capToSpendable, useSpendable } from '@/lib/spendable'
@@ -28,40 +28,39 @@ export function AgentAccountPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="card p-4 sm:p-5">
-        <p className="text-sm text-muted">
-          A sub-account is a separate wallet your agent controls with its own key. It holds only what you send it.
-          The key is created in this browser and shown once. Basket limits (drift band, cooldown, trade size, slippage) are enforced
-          on-chain by the basket contract. The agent wallet itself has no on-chain spending cap beyond what you fund it with:
+      <div className="card p-5 sm:p-6">
+        <h3 className="title-4">New agent wallet</h3>
+        <p className="mt-2 text-muted body-6">
+          Basket trades it triggers must pass the basket's limits. The wallet itself has no spending cap beyond its balance, so
           <strong className="text-ink"> fund only what the agent may use.</strong>
         </p>
         <form
-          className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end"
+          className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"
           onSubmit={(e) => { e.preventDefault(); if (!reveal && agents.length < MAX_AGENTS) create() }}
         >
           <label className="block min-w-0 flex-1">
-            <span className="eyebrow mb-1 block">Label</span>
+            <span className="mb-2 block text-muted caption-2">Name</span>
             <input
               className="field"
               value={label}
               maxLength={32}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="e.g. rebalancer-bot"
+              placeholder="Rebalancer bot"
               autoComplete="off"
             />
           </label>
-          <button type="submit" className="btn shrink-0" disabled={Boolean(reveal) || agents.length >= MAX_AGENTS}>
-            <Plus size={15} aria-hidden /> Create agent wallet
+          <button type="submit" className="cta-sm shrink-0 disabled:cursor-not-allowed disabled:opacity-40" disabled={Boolean(reveal) || agents.length >= MAX_AGENTS}>
+            <Plus size={16} weight="bold" aria-hidden /> Create wallet
           </button>
         </form>
-        {agents.length >= MAX_AGENTS && <p className="mt-2 text-xs text-warn">Limit of {MAX_AGENTS} saved agents. Remove one to add another.</p>}
-        {!persisted && <p className="mt-2 text-xs text-warn">This browser blocked local storage, so the agent list is kept for this session only.</p>}
+        {agents.length >= MAX_AGENTS && <p className="mt-3 text-warn caption-2">You can keep {MAX_AGENTS} agents. Remove one to add another.</p>}
+        {!persisted && <p className="mt-3 text-warn caption-2">This browser blocks local storage, so the list is kept for this visit only.</p>}
       </div>
 
       {reveal && <RevealBox reveal={reveal} onDone={() => setReveal(null)} />}
 
       {agents.length === 0 ? (
-        <p className="card p-4 text-sm text-muted sm:p-5">No agent wallets yet.</p>
+        <p className="rounded-2xl border border-dashed border-line p-5 text-muted body-6 sm:p-6">No agent wallets yet. Create one above.</p>
       ) : (
         <ul className="space-y-3">
           {agents.map((a) => (
@@ -79,12 +78,12 @@ function RevealBox({ reveal, onDone }: { reveal: Reveal; onDone: () => void }) {
   const [saved, setSaved] = useState(false)
   const file = `arc-agent-${reveal.address.slice(2, 8).toLowerCase()}.env`
   return (
-    <section role="alert" aria-label="Agent private key" className="rounded-2xl border-2 border-warn bg-warn/10 p-4 sm:p-5">
+    <section role="alert" aria-label="Agent private key" className="rounded-2xl border border-warn bg-warn/10 p-5 sm:p-6">
       <div className="flex items-start gap-3">
-        <ShieldAlert size={20} className="mt-0.5 shrink-0 text-warn" aria-hidden />
+        <ShieldWarning size={22} weight="fill" className="mt-0.5 shrink-0 text-warn" aria-hidden />
         <div className="min-w-0">
-          <p className="font-bold text-ink">Save this private key now. It is shown only once.</p>
-          <p className="mt-1 text-sm text-ink">
+          <p className="title-4">Save this key now. You will not see it again.</p>
+          <p className="mt-2 body-6">
             It cannot be recovered, and Arcline does not store it. Anyone with this key controls the agent wallet and its funds.
             Never commit it to git, paste it in a chat, or share it.
           </p>
@@ -93,11 +92,11 @@ function RevealBox({ reveal, onDone }: { reveal: Reveal; onDone: () => void }) {
 
       <dl className="mt-4 space-y-3">
         <div>
-          <dt className="eyebrow">{reveal.label} address</dt>
+          <dt className="text-muted caption-2">{reveal.label} address</dt>
           <dd className="mt-1 break-all font-mono text-xs text-ink">{reveal.address}</dd>
         </div>
         <div>
-          <dt className="eyebrow">Private key</dt>
+          <dt className="text-muted caption-2">Private key</dt>
           <dd className="mt-1 select-all break-all rounded-lg border border-warn/60 bg-panel p-2.5 font-mono text-xs text-ink">{reveal.privateKey}</dd>
         </div>
       </dl>
@@ -105,15 +104,15 @@ function RevealBox({ reveal, onDone }: { reveal: Reveal; onDone: () => void }) {
       <div className="mt-4 flex flex-wrap gap-2">
         <CopyButton text={reveal.privateKey} label="Copy key" className="btn-ghost h-9 px-3 text-xs" />
         <button type="button" className="btn-ghost h-9 px-3 text-xs" onClick={() => downloadText(file, envFileText(reveal.privateKey))}>
-          <KeyRound size={13} aria-hidden /> Download .env
+          <Key size={14} aria-hidden /> Download .env
         </button>
       </div>
 
-      <label className="mt-4 flex items-start gap-2 text-sm text-ink">
+      <label className="mt-5 flex items-start gap-3 body-6">
         <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-accent" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
         <span>I saved the key somewhere safe. I understand it cannot be shown again.</span>
       </label>
-      <button type="button" className="btn mt-3" disabled={!saved} onClick={onDone}>
+      <button type="button" className="cta-sm mt-4 disabled:cursor-not-allowed disabled:opacity-40" disabled={!saved} onClick={onDone}>
         Hide key
       </button>
     </section>
@@ -170,55 +169,55 @@ function AgentRow({ agent }: { agent: SavedAgent }) {
   const empty = bal.data === 0n
 
   return (
-    <div className="card p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="card p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-ink">{agent.label}</p>
-          <p className="mt-0.5 break-all font-mono text-xs text-muted">{agent.address}</p>
+          <p className="truncate title-4">{agent.label}</p>
+          <p className="mt-1 break-all font-mono text-muted caption-5">{agent.address}</p>
         </div>
         <div className="text-right">
-          <p className="eyebrow">Agent balance</p>
-          <p className="num font-mono text-lg font-semibold text-ink">
-            {balText} <span className="text-xs font-normal text-muted">USDC</span>
+          <p className="text-muted caption-2">Balance</p>
+          <p className="font-mono title-3">
+            {balText} <span className="text-muted caption-2">USDC</span>
           </p>
-          {empty && <span className="badge bg-warn/15 text-warn">Unfunded</span>}
+          {empty && <span className="text-warn caption-4">Not funded yet</span>}
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" className="btn h-9 px-3 text-xs" onClick={() => setFundOpen((o) => !o)} aria-expanded={fundOpen}>
-          Fund agent
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <button type="button" className="cta-sm" onClick={() => setFundOpen((o) => !o)} aria-expanded={fundOpen}>
+          Add USDC
         </button>
         <CopyButton text={agent.address} label="Copy address" className="btn-ghost h-9 px-3 text-xs" />
         <a className="btn-ghost h-9 px-3 text-xs" href={addrUrl(agent.address)} target="_blank" rel="noopener noreferrer">
-          Explorer <ExternalLink size={12} aria-hidden />
+          Explorer <ArrowUpRight size={12} aria-hidden />
         </a>
         {confirmRemove ? (
           <span className="inline-flex flex-wrap items-center gap-2">
             <button type="button" className="btn-ghost h-9 border-down/60 px-3 text-xs text-down" onClick={() => { removeAgent(agent.address); toast('Agent removed from this browser', { description: 'Funds at the address are untouched.' }) }}>
-              <Trash2 size={13} aria-hidden /> Confirm remove
+              <Trash size={14} aria-hidden /> Confirm remove
             </button>
             <button type="button" className="btn-ghost h-9 px-3 text-xs" onClick={() => setConfirmRemove(false)}>Cancel</button>
           </span>
         ) : (
           <button type="button" className="btn-ghost h-9 px-3 text-xs" onClick={() => setConfirmRemove(true)}>
-            Remove agent
+            Remove
           </button>
         )}
       </div>
       {confirmRemove && (
-        <p className="mt-2 text-xs text-muted">
+        <p className="mt-3 text-muted caption-2">
           This only forgets the address in this browser. Funds stay at {short(agent.address)}; without the private key they cannot be moved.
         </p>
       )}
 
       {fundOpen && (
         <form
-          className="mt-4 rounded-xl border border-line bg-panel2 p-3"
+          className="mt-5 rounded-2xl border border-line bg-panel2 p-4"
           onSubmit={(e) => { e.preventDefault(); if (canSend) void fund() }}
         >
           <label className="block">
-            <span className="eyebrow mb-1 block">Amount (USDC)</span>
+            <span className="mb-2 block text-muted caption-2">Amount in USDC</span>
             <div className="flex gap-2">
               <input
                 className="field num"
@@ -239,14 +238,14 @@ function AgentRow({ agent }: { agent: SavedAgent }) {
               </button>
             </div>
           </label>
-          <p id={`fund-note-${agent.address}`} className="mt-2 text-xs text-muted">
-            USDC is also the gas token on Arc, so the agent needs a balance to send transactions: fund at least ~1 USDC.
-            {cap !== undefined && <> Your spendable balance is {amt(cap, 6, 4)} USDC (a small gas reserve is held back).</>}
+          <p id={`fund-note-${agent.address}`} className="mt-3 text-muted caption-2">
+            USDC also pays gas on Arc, so send at least 1 USDC.
+            {cap !== undefined && <> You can send up to {amt(cap, 6, 4)} USDC; a little is kept back for your own gas.</>}
           </p>
-          {tooMuch && <p className="mt-1 text-xs text-down">That is more than your spendable balance.</p>}
-          {amount !== '' && want === null && <p className="mt-1 text-xs text-down">Enter a USDC amount with up to 6 decimals.</p>}
-          <button type="submit" className="btn mt-3" disabled={!canSend}>
-            {pending ? 'Sending…' : ready ? 'Send USDC to agent' : 'Connect a wallet to fund'}
+          {tooMuch && <p className="mt-2 text-down caption-2">That is more than you can send.</p>}
+          {amount !== '' && want === null && <p className="mt-2 text-down caption-2">Enter an amount with up to 6 decimals.</p>}
+          <button type="submit" className="cta-sm mt-4 disabled:cursor-not-allowed disabled:opacity-40" disabled={!canSend}>
+            {pending ? 'Sending…' : ready ? 'Send USDC' : 'Connect a wallet first'}
           </button>
         </form>
       )}
