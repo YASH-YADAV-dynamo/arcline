@@ -15,6 +15,11 @@ contract BucketAccount is IBucketAccount {
     uint256 public constant MAX_ASSETS = 12;
     uint256 public constant MAX_UNIVERSE = 16;
     uint256 private constant BPS = 10_000;
+    /// A rebalance leg smaller than this share of the basket is skipped: its spread and gas cost more
+    /// than the drift it would fix. 0.25%, well under the smallest allowed band (1%).
+    uint256 public constant MIN_LEG_BPS = 25;
+    /// Fee assumed for a venue that does not publish one.
+    uint256 public constant DEFAULT_FEE_BPS = 30;
 
     error AlreadyInitialized();
     error BadParams();
@@ -221,28 +226,106 @@ contract BucketAccount is IBucketAccount {
         if (block.timestamp < readyAt) revert Cooldown(readyAt);
         uint256 capValue = uint256(_params.maxTradeBps) * s.total / BPS;
         uint256 trades;
-        // All orders use the pre-trade snapshot; sell proceeds fund the subsequent buys.
+        // Cost aware, in two phases.
+        // 1. Sell what is overweight (legs below MIN_LEG_BPS are skipped: their spread and gas cost
+        //    more than the drift they fix). The venue's spread comes out of the proceeds.
         for (uint256 i; i < s.positions.length; ++i) {
             Position memory position = s.positions[i];
-            if (position.token != usdc && position.drift > 0) {
+            // Exit-level assets are always sold, however small: the risk flag says get out.
+            if (position.token != usdc && (position.drift > int32(int256(MIN_LEG_BPS))
+                || (position.risk == 3 && position.balance != 0))) {
                 if (_sell(position, s.total, capValue)) ++trades;
             }
         }
-        for (uint256 i; i < s.positions.length; ++i) {
-            Position memory position = s.positions[i];
-            if (position.token != usdc && position.drift < 0 && position.risk < 2) {
-                uint256 spend = _min(uint256(-int256(position.drift)) * s.total / BPS / 1e12, capValue / 1e12);
-                spend = _min(spend, IERC20(usdc).balanceOf(address(this)));
-                if (spend != 0) {
-                    _buy(position.token, spend);
-                    ++trades;
-                }
-            }
-        }
+        // 2. Re-read the basket AFTER the sells, so buys are sized on the cash that actually arrived,
+        //    then size them to land ON target once the buy spreads and the caller's tip are paid.
+        uint256 tip = _min(TIP_CAP, (s.total / 1e12) * TIP_BPS / BPS); // USDC 6 dp, set aside before buying
+        trades += _buyToTarget(capValue, tip);
         if (trades == 0) revert NotNeeded(maxDriftBps);
         lastRebalance = uint64(block.timestamp);
-        uint256 tip = _payTip(s.total);
+        tip = _payExact(tip);
         emit Rebalanced(msg.sender, s.total, _totalValue(), maxDriftBps, tip);
+    }
+
+    /// Buys toward target on the post-sell basket. The holdable value is what remains after the tip
+    /// and the buy spreads: N = total - tip - sum(cost_i). Each underweight asset needs d_i = w_i*N - v_i
+    /// of value, which costs d_i / (1 - fee_i) of USDC because the venue keeps fee_i. N depends on the
+    /// costs and the costs on N, so it is solved with one fixed-point step (the error is fee squared,
+    /// under 0.01% at a 0.3% spread). When cash is short every buy is scaled down pro rata, so no asset
+    /// is starved just because it comes later in the list.
+    function _buyToTarget(uint256 capValue, uint256 tipUsdc) private returns (uint256 trades) {
+        Snapshot memory m = _snapshot();
+        if (m.total == 0) return 0;
+        uint256 tip = tipUsdc * 1e12; // E18, reserved for the caller
+        uint256 n = m.total > tip ? m.total - tip : 0;
+        uint256 len = m.positions.length;
+        // If idle cash is itself outside the band, every buy goes ahead, however small: otherwise a
+        // wide basket could hold extra cash forever with each leg under the dust floor.
+        bool cashOut;
+        for (uint256 i; i < len; ++i) {
+            if (m.positions[i].token == usdc && m.positions[i].drift > int32(uint32(_params.bandBps))) cashOut = true;
+        }
+        uint256[] memory fee = new uint256[](len);
+        uint256 cost;
+        for (uint256 pass; pass < 2; ++pass) {
+            uint256 holdable = n > cost ? n - cost : 0;
+            cost = 0;
+            for (uint256 i; i < len; ++i) {
+                Position memory p = m.positions[i];
+                if (p.token == usdc || p.risk >= 2) continue;
+                uint256 want = uint256(p.weight) * holdable / BPS;
+                if (want <= p.value) continue;
+                if (pass == 0) fee[i] = _feeBps(registry.assetOf(p.token).venue);
+                cost += (want - p.value) * fee[i] / (BPS - fee[i]);
+            }
+        }
+        uint256 holdableFinal = n > cost ? n - cost : 0;
+        uint256[] memory spend = new uint256[](len);
+        uint256 total; // USDC, 6 decimals
+        for (uint256 i; i < len; ++i) {
+            Position memory p = m.positions[i];
+            if (p.token == usdc || p.risk >= 2) continue;
+            uint256 want = uint256(p.weight) * holdableFinal / BPS;
+            if (want <= p.value) continue;
+            uint256 gap = want - p.value;
+            if (!cashOut && gap * BPS <= MIN_LEG_BPS * m.total) continue; // dust: not worth a trade
+            uint256 s = _min(gap * BPS / (BPS - fee[i]), capValue) / 1e12;
+            spend[i] = s;
+            total += s;
+        }
+        if (total == 0) return 0;
+        // Cash the buys may use: everything except the reserved tip and the basket's own cash target.
+        uint256 cash = IERC20(usdc).balanceOf(address(this));
+        uint256 keep = tip / 1e12;
+        for (uint256 i; i < len; ++i) {
+            if (m.positions[i].token == usdc) keep += uint256(m.positions[i].weight) * holdableFinal / BPS / 1e12;
+        }
+        uint256 avail = cash > keep ? cash - keep : 0;
+        for (uint256 i; i < len; ++i) {
+            uint256 s = spend[i];
+            if (s == 0) continue;
+            if (total > avail) s = s * avail / total; // pro rata when short
+            if (s == 0) continue;
+            _buy(m.positions[i].token, s);
+            ++trades;
+        }
+    }
+
+    /// The venue's posted fee in bps: MirrorVenue.spreadBps(), or a Uniswap v4 pool's fee from key()
+    /// (pips, 100 pips = 1 bp). Unknown venues are assumed to charge DEFAULT_FEE_BPS. Capped at 3%.
+    function _feeBps(address venue) private view returns (uint256 f) {
+        f = DEFAULT_FEE_BPS;
+        (bool ok, bytes memory out) = venue.staticcall(abi.encodeWithSignature("spreadBps()"));
+        if (ok && out.length >= 32) {
+            f = abi.decode(out, (uint256));
+        } else {
+            (ok, out) = venue.staticcall(abi.encodeWithSignature("key()"));
+            if (ok && out.length >= 160) {
+                (,, uint24 pips,,) = abi.decode(out, (address, address, uint24, int24, address));
+                f = uint256(pips) / 100;
+            }
+        }
+        if (f > 300) f = 300;
     }
 
     function setSip(uint256 amountUsdc, uint32 interval, uint32 runs) external override onlyOwner nonReentrant {
@@ -382,15 +465,23 @@ contract BucketAccount is IBucketAccount {
         uint256 amount = _min(_amountForValue(p.token, sellValue), p.balance);
         if (amount == 0) return false;
         uint256 referenceOut = registry.valueE18(p.token, amount) / 1e12;
-        _swap(p.token, usdc, amount, referenceOut * (BPS - _params.maxSlippageBps) / BPS,
-            registry.assetOf(p.token).venue);
+        address venue = registry.assetOf(p.token).venue;
+        _swap(p.token, usdc, amount, _minOut(referenceOut, venue), venue);
         return true;
     }
 
     function _buy(address token, uint256 spend) private {
         uint256 referenceOut = _amountForValue(token, spend * 1e12);
-        _swap(usdc, token, spend, referenceOut * (BPS - _params.maxSlippageBps) / BPS,
-            registry.assetOf(token).venue);
+        address venue = registry.assetOf(token).venue;
+        _swap(usdc, token, spend, _minOut(referenceOut, venue), venue);
+    }
+
+    /// The least a trade may return: the oracle amount, less the venue's posted fee, less the owner's
+    /// slippage bound. The fee is known in advance, so max slippage only has to cover real price impact
+    /// and oracle lag (before, a 0.3% spread silently consumed most of a 1% bound, and anything under
+    /// 0.3% could never fill). The fee comes from the venue the registry owner listed, capped at 3%.
+    function _minOut(uint256 referenceOut, address venue) private view returns (uint256) {
+        return referenceOut * (BPS - _feeBps(venue)) / BPS * (BPS - _params.maxSlippageBps) / BPS;
     }
 
     function _amountForValue(address token, uint256 value) private view returns (uint256) {
@@ -415,6 +506,14 @@ contract BucketAccount is IBucketAccount {
         for (uint256 i; i < _tokens.length; ++i) {
             total += registry.valueE18(_tokens[i], IERC20(_tokens[i]).balanceOf(address(this)));
         }
+    }
+
+    /// Pays the caller the tip reserved before the buys (or whatever USDC is left, if less).
+    function _payExact(uint256 tip) private returns (uint256) {
+        uint256 cash = IERC20(usdc).balanceOf(address(this));
+        if (tip > cash) tip = cash;
+        if (tip != 0) IERC20(usdc).safeTransfer(msg.sender, tip);
+        return tip;
     }
 
     function _payTip(uint256 valueE18) private returns (uint256 tip) {
