@@ -121,4 +121,19 @@ p, li, dd { text-wrap: pretty; }
    is the one place a linear curve is correct; every position change uses the base curve. */
 @keyframes coin-spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
 .coin-spin { animation: coin-spin 16s linear infinite; }
-@media (prefers-reduced-motion: reduce) { .coin-spin { animation: none; } }
+/* A slow hover, so a parked coin still feels like it floats. Base curve, there and back. */
+@keyframes coin-float { from { transform: translate3d(0, -3.5%, 0) rotate(-2deg); } to { transform: translate3d(0, 3.5%, 0) rotate(2deg); } }
+.coin-float { animation: coin-float 6s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate; }
+/* Light that follows the spin: a face is brightest when it turns toward you and dims edge on.
+   Opacity only, so it runs on the compositor in step with coin-spin (same duration and delay). */
+@keyframes coin-lit-front { 0%, 100% { opacity: 1; } 22%, 78% { opacity: 0.1; } 50% { opacity: 0; } }
+@keyframes coin-lit-back { 0%, 100% { opacity: 0; } 28%, 72% { opacity: 0.1; } 50% { opacity: 1; } }
+@keyframes coin-shade-front { 0%, 100% { opacity: 0; } 25%, 75% { opacity: 0.55; } }
+@keyframes coin-shade-back { 0%, 25%, 75%, 100% { opacity: 0.55; } 50% { opacity: 0; } }
+.coin-lit-front { animation: coin-lit-front 16s linear infinite; }
+.coin-lit-back { animation: coin-lit-back 16s linear infinite; }
+.coin-shade-front { animation: coin-shade-front 16s linear infinite; }
+.coin-shade-back { animation: coin-shade-back 16s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .coin-spin, .coin-float, .coin-lit-front, .coin-lit-back, .coin-shade-front, .coin-shade-back { animation: none; }
+}
